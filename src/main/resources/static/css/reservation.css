@@ -1,0 +1,219 @@
+/* 예매 확인 팝업 / 예매 내역 / 평점 관리 */
+
+/* 예매 확인 팝업.
+   설문 팝업과 달리 닫기 수단이 없음 — 예매 여부를 반드시 받아야 하기 때문 */
+.reservation-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(2px);
+    /* 설문 팝업(1050)보다 위 — 건너뛸 수 없는 쪽이 앞에 나와야 함 */
+    z-index: 1060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.reservation-confirm-card {
+    position: relative;
+    background: var(--bg-main);
+    width: 100%;
+    max-width: 400px;
+    border-radius: 24px;
+    padding: 32px 28px 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    text-align: center;
+}
+
+.reservation-confirm-poster {
+    width: 110px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 10px;
+    margin: 0 auto 16px;
+    display: block;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+.reservation-confirm-site {
+    display: inline-block;
+    background: rgba(250, 82, 82, 0.1);
+    color: var(--point-red);
+    border-radius: 999px;
+    padding: 3px 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+/* 남은 미확인 건수 (예: "1 / 3") */
+.reservation-confirm-progress {
+    font-size: 0.76rem;
+    color: #868e96;
+    margin-top: 14px;
+}
+
+.reservation-confirm-error {
+    color: var(--point-red);
+    font-size: 0.82rem;
+    margin-top: 10px;
+    display: none;
+}
+
+/* 예매/취소 내역 */
+.history-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.history-row:last-child {
+    border-bottom: none;
+}
+
+.history-poster {
+    width: 64px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: #e9ecef;
+}
+
+.history-info {
+    flex-grow: 1;
+    min-width: 0; /* 긴 제목이 행 밖으로 밀고 나가지 않도록 */
+}
+
+.history-title {
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.history-meta {
+    font-size: 0.8rem;
+    color: #868e96;
+}
+
+/* 상태 배지 — 색은 서버가 내려준 status 로 정함 */
+.status-badge {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 3px 11px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-badge.is-pending {
+    background: rgba(253, 126, 20, 0.12);
+    color: #FD7E14;
+}
+
+.status-badge.is-confirmed {
+    background: rgba(250, 82, 82, 0.1);
+    color: var(--point-red);
+}
+
+.status-badge.is-canceled {
+    background: #f1f3f5;
+    color: #868e96;
+}
+
+/* 평점 관리 */
+.rating-row {
+    display: flex;
+    gap: 16px;
+    padding: 20px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.rating-row:last-child {
+    border-bottom: none;
+}
+
+/* 별점 입력. 라디오 5개 + CSS 만으로 동작.
+   DOM 은 5→1 순으로 두고 row-reverse 로 뒤집어야 "선택한 별과 그 왼쪽"을 ~ 로 칠할 수 있음 */
+.star-rating {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 2px;
+}
+
+.star-rating input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.star-rating label {
+    color: #dee2e6;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.12s ease;
+    margin: 0;
+}
+
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    color: var(--point-red);
+}
+
+/* 키보드 포커스 표시 */
+.star-rating input:focus-visible + label {
+    outline: 2px solid var(--point-red);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.rating-review-input {
+    font-size: 0.88rem;
+}
+
+/* 저장 버튼 — flex 안에서 줄어들면 "저 / 장" 으로 쪼개지므로 폭 고정 */
+.rating-save-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rating-feedback {
+    font-size: 0.8rem;
+    margin-top: 6px;
+    min-height: 1.2em;
+}
+
+.rating-feedback.is-error {
+    color: var(--point-red);
+}
+
+.rating-feedback.is-success {
+    color: #2f9e44;
+}
+
+/* 목록이 비었을 때 */
+.list-empty {
+    text-align: center;
+    padding: 48px 16px;
+    color: #868e96;
+}
+
+.list-empty i {
+    font-size: 2.2rem;
+    color: #ced4da;
+    display: block;
+    margin-bottom: 12px;
+}

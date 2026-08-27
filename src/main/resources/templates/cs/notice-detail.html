@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title th:text="'CinePick - ' + ${notice.title}">CinePick - 공지사항</title>
+</head>
+<body>
+<main class="container my-5">
+
+    <div th:replace="~{cs/tabs :: tabs(${activeTab})}"></div>
+
+    <div th:if="${successMessage}" class="alert alert-success py-2 small" th:text="${successMessage}"></div>
+
+    <article class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="cs-badge"
+                  th:classappend="${notice.category == '이벤트'} ? 'cs-badge-event'
+                                : (${notice.category == '점검'} ? 'cs-badge-check' : 'cs-badge-info')"
+                  th:text="${notice.category}">안내</span>
+            <span th:if="${notice.pinned}" class="text-muted small">
+                <i class="bi bi-pin-angle-fill cs-pin"></i> 고정 공지
+            </span>
+        </div>
+
+        <h4 class="fw-bold mb-2" th:text="${notice.title}">제목</h4>
+
+        <div class="text-muted small border-bottom pb-3 mb-4">
+            <span th:text="${notice.createdAt}">2026.08.19</span>
+            <span class="cs-dot">·</span>
+            <i class="bi bi-eye"></i> <span th:text="${notice.viewCount}">0</span>
+        </div>
+
+        <!-- 본문은 평문이라 줄바꿈만 살린다 (cs.css 의 white-space: pre-line) -->
+        <div class="cs-content" th:text="${notice.content}">본문</div>
+
+    </article>
+
+    <div class="mt-4 d-flex justify-content-between align-items-center gap-2 flex-wrap">
+        <a th:href="@{/cs/notices}" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-list-ul me-1"></i> 목록으로
+        </a>
+
+        <!-- 관리 버튼. 삭제는 POST 폼 — 링크로 두면 주소만 알아도 지워진다 -->
+        <div class="d-flex gap-2" sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/cs/admin/notices/{id}/edit(id=${notice.id})}"
+               class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-pencil me-1"></i> 수정
+            </a>
+            <form th:action="@{/cs/admin/notices/{id}/delete(id=${notice.id})}" method="post"
+                  class="cs-delete-form" data-confirm="이 공지사항을 삭제할까요? 되돌릴 수 없습니다.">
+                <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                    <i class="bi bi-trash me-1"></i> 삭제
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script defer th:src="@{/js/cs-admin.js}"></script>
+
+</main>
+</body>
+</html>

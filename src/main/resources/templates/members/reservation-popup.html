@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  예매 확인 팝업.
+  닫기 버튼이 없다 — 건너뛸 수 없는 응답이라 의도적으로 뺀 것이니 X 버튼을 붙이지 말 것.
+  답하지 않고 떠나면 미확인으로 남아 다음 화면에서 다시 뜬다.
+
+  reservation 은 null 일 수 있다(미확인 건이 없는 로그인 사용자에게도 숨겨진 껍데기를 깔아둠).
+  그래서 값 참조는 모두 널 안전 연산자(?.)를 쓴다.
+-->
+<div th:fragment="reservationConfirm(reservation, remaining)"
+     id="reservationConfirmOverlay" class="reservation-confirm-overlay"
+     th:style="${reservation != null} ? 'display:flex' : 'display:none'"
+     th:attr="data-reservation-id=${reservation?.id}, data-remaining=${remaining}">
+  <div class="reservation-confirm-card">
+
+    <img id="reservationConfirmPoster" class="reservation-confirm-poster"
+         th:src="${reservation?.posterUrl}" onerror="this.src='/images/Logo.png'"
+         th:alt="${reservation?.title}">
+
+    <span id="reservationConfirmSite" class="reservation-confirm-site"
+          th:text="${reservation?.site}">CGV</span>
+
+    <h5 class="fw-bold mb-1" id="reservationConfirmTitle" th:text="${reservation?.title}">영화 제목</h5>
+
+    <p class="text-muted small mb-4">
+      <span id="reservationConfirmDate" th:text="${reservation?.clickedAt}">2026.08.12 14:00</span>에
+      예매 사이트로 이동하셨어요.<br>
+      <strong class="text-dark">실제로 예매하셨나요?</strong>
+    </p>
+
+    <div class="d-grid gap-2">
+      <button type="button" id="reservationConfirmYes" class="btn btn-point fw-bold rounded-3 py-2">
+        네, 예매했어요
+      </button>
+      <button type="button" id="reservationConfirmNo" class="btn btn-outline-secondary fw-bold rounded-3 py-2">
+        아니요, 예매하지 않았어요
+      </button>
+    </div>
+
+    <div id="reservationConfirmError" class="reservation-confirm-error"></div>
+
+    <p class="reservation-confirm-progress" id="reservationConfirmProgress"
+       th:text="${remaining != null and remaining > 1} ? '확인할 예매가 ' + ${remaining} + '건 더 있어요' : ''">
+    </p>
+
+    <p class="text-muted mb-0" style="font-size: 0.72rem; margin-top: 10px;">
+      CinePick은 예매를 대신 처리하지 않고 예매 사이트로 연결만 해드려요.<br>
+      그래서 실제 예매 여부는 회원님께 여쭤보고 있어요.
+    </p>
+  </div>
+</div>
+</body>
+</html>

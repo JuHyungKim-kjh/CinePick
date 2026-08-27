@@ -1,0 +1,313 @@
+/* 고객지원 (공지사항 · FAQ · 1:1 상담).
+   탭으로 이어진 한 페이지라 세 화면이 한 파일을 씀 */
+
+.cs-header {
+    margin-bottom: 20px;
+}
+
+/* 탭 */
+
+.cs-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    overflow-x: auto;              /* 좁은 화면에서 탭이 접히지 않고 옆으로 밀리도록 */
+
+    /* 회색선을 border 가 아니라 inset 그림자로 그림.
+       border 면 활성 탭 밑줄을 겹치려 음수 margin 이 필요한데, 그 2px 가
+       overflow-x:auto 영역을 넘어 세로 스크롤바까지 띄움 */
+    box-shadow: inset 0 -2px 0 #e9ecef;
+}
+
+.cs-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    color: #868e96;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: 0.15s;
+}
+
+.cs-tab:hover {
+    color: var(--point-red);
+}
+
+.cs-tab-active {
+    color: var(--point-red);
+    border-bottom-color: var(--point-red);
+}
+
+/* 공지 목록 */
+
+.cs-notice-row + .cs-notice-row {
+    border-top: 1px solid #f1f3f5;
+}
+
+.cs-notice-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    color: #212529;
+    text-decoration: none;
+    transition: 0.15s;
+}
+
+.cs-notice-link:hover {
+    background: #f8f9fa;
+    color: var(--point-red);
+}
+
+/* 제목이 남은 폭을 다 쓰고 넘치면 자름 */
+.cs-notice-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.cs-notice-meta {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    color: #adb5bd;
+}
+
+.cs-dot {
+    margin: 0 4px;
+}
+
+.cs-pin {
+    color: var(--point-red);
+    margin-right: 4px;
+}
+
+.cs-new {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--point-red);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+/* 말머리 배지 */
+
+.cs-badge {
+    flex-shrink: 0;
+    display: inline-block;
+    min-width: 52px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.cs-badge-info {
+    background: rgba(250, 82, 82, 0.1);
+    color: var(--point-red);
+}
+
+.cs-badge-event {
+    background: rgba(34, 139, 230, 0.1);
+    color: #228be6;
+}
+
+.cs-badge-check {
+    background: #f1f3f5;
+    color: #868e96;
+}
+
+/* 본문 */
+
+/* 본문이 평문으로 들어오므로 줄바꿈만 살림 */
+.cs-content {
+    white-space: pre-line;
+    line-height: 1.8;
+    color: #495057;
+    font-size: 0.95rem;
+    word-break: keep-all;
+}
+
+/* FAQ 분류 거르개 */
+
+.cs-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.cs-chip {
+    padding: 6px 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    background: #fff;
+    color: #495057;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: 0.15s;
+}
+
+.cs-chip:hover {
+    border-color: var(--point-red);
+    color: var(--point-red);
+}
+
+.cs-chip-active {
+    background: var(--point-red);
+    border-color: var(--point-red);
+    color: #fff;
+}
+
+.cs-chip-active:hover {
+    color: #fff;
+}
+
+/* 아코디언 (FAQ · 내 문의 내역 공용) */
+
+.cs-faq-item + .cs-faq-item {
+    border-top: 1px solid #f1f3f5;
+}
+
+/* 줄 전체가 버튼 — 기본 button 모양 제거 */
+.cs-faq-question {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 16px 20px;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    transition: 0.15s;
+}
+
+.cs-faq-question:hover {
+    background: #f8f9fa;
+}
+
+.cs-faq-category {
+    flex-shrink: 0;
+    min-width: 44px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(250, 82, 82, 0.1);
+    color: var(--point-red);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.cs-faq-text {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #212529;
+    word-break: keep-all;
+}
+
+.cs-faq-arrow {
+    flex-shrink: 0;
+    color: #adb5bd;
+    transition: transform 0.2s;
+}
+
+.cs-faq-item.is-open .cs-faq-arrow {
+    transform: rotate(180deg);
+}
+
+.cs-faq-answer {
+    display: none;
+    padding: 4px 20px 20px 20px;
+    background: #fbfbfc;
+}
+
+.cs-faq-item.is-open .cs-faq-answer {
+    display: block;
+}
+
+/* 1:1 상담 */
+
+.cs-status {
+    flex-shrink: 0;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.cs-status-wait {
+    background: #f1f3f5;
+    color: #868e96;
+}
+
+.cs-status-done {
+    background: rgba(64, 192, 87, 0.12);
+    color: #2f9e44;
+}
+
+/* 답변 — 왼쪽 선으로 내가 쓴 글과 구분 */
+.cs-answer-box {
+    border-left: 3px solid var(--point-red);
+    background: #fff;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+}
+
+/* 안내 띠 */
+
+.cs-callout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 20px 24px;
+    border: 1px dashed #dee2e6;
+    border-radius: 12px;
+    background: #fff;
+}
+
+/* 관리자 버튼 */
+
+/* FAQ 답변 안쪽에 붙는 수정·삭제 줄 */
+.cs-admin-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed #e9ecef;
+}
+
+/* 삭제 버튼이 든 폼을 형제들과 같은 줄에 세움 */
+.cs-delete-form {
+    display: inline;
+    margin: 0;
+}
+
+/* 운영자 전용 탭 */
+.cs-tab-admin {
+    margin-left: 8px;
+    padding-left: 24px;
+    border-left: 1px solid #e9ecef;
+}
+
+/* 답변 화면 목록의 작성자 칸 */
+.cs-inquiry-writer {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    color: #868e96;
+}

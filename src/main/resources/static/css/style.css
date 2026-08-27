@@ -1,0 +1,302 @@
+/* CinePick 전역 테마 컬러 변수 */
+:root {
+    --bg-main: #F8F9FA;    /* 전체 배경색 (밝은 회색) */
+    --text-dark: #212529;  /* 어두운 배경 및 기본 텍스트 (검은 계열) */
+    --point-red: #FA5252;  /* 포인트 컬러 (붉은색) */
+}
+
+/* 기본 스타일 */
+body {
+    background-color: var(--bg-main);
+}
+
+/* 유틸리티 클래스 */
+
+/* 포인트 컬러 텍스트 */
+.text-point {
+    color: var(--point-red) !important;
+}
+
+/* 어두운 배경 섹션 */
+.bg-dark-section {
+    background-color: var(--text-dark);
+    color: white;
+}
+
+/* 포인트 컬러 테두리 및 텍스트 */
+.border-point {
+    border-color: var(--point-red) !important;
+    color: var(--point-red) !important;
+}
+
+/* 네비게이션 메뉴 호버 효과 */
+.hover-opacity:hover { opacity: 0.7; transition: 0.3s; }
+
+/* 상단 메뉴 간격.
+   가로로 놓이는 lg 이상만 벌린다. 세로로 쌓이는 접힌 메뉴는 .nav-link 위아래 여백만으로 충분 */
+.navbar-menu { gap: 0.125rem; }
+
+@media (min-width: 992px) {
+    .navbar-menu {
+        gap: 3.25rem;
+        /* 메뉴끼리의 간격보다 넓어야 로고가 목록의 첫 항목처럼 묶여 보이지 않음 */
+        margin-left: 4.5rem;
+    }
+}
+
+/* 슬라이더 좌우 화살표 버튼 */
+.swiper-button-next, .swiper-button-prev {
+    background-color: #ffffff !important; /* 흰색 배경 */
+    color: #111111 !important; /* 검은색 화살표 */
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50%; /* 동그랗게 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* 그림자 효과 */
+    z-index: 20;
+}
+
+/* 기본 화살표 아이콘 크기 조절 */
+.swiper-button-next::after, .swiper-button-prev::after {
+    font-size: 20px !important;
+    font-weight: 900;
+}
+
+/* 버튼이 포스터 바깥쪽에 살짝 걸치도록 위치 조정 */
+.swiper-button-prev { left: -15px !important; }
+.swiper-button-next { right: -15px !important; }
+
+/* 화살표가 잘리지 않도록, 확대된 포스터가 아래 섹션과 겹치지 않도록 패딩 여백 추가.
+   상하 55px 은 가운데 포스터 확대(scale 1.12)가 밖으로 새지 않을 여유분.
+   overflow:hidden 을 직접 못박아 둔다 — Swiper 기본값에 기대지 않고 이 컨테이너 밖으로는
+   절대 못 나가게 한다 */
+.movieSwiper { padding: 55px 20px !important; margin: 0 -20px; overflow: hidden; }
+
+/* 무비차트 - 가운데 포스터 확대 + 번호 배지 강조 (Swiper 가 붙이는 swiper-slide-active 로 판단) */
+.movie-badge {
+    background-color: rgba(33, 37, 41, 0.8);
+    z-index: 10;
+    transition: background-color 0.3s ease;
+}
+
+.swiper-slide-active .movie-badge {
+    background-color: var(--point-red);
+}
+
+.movieSwiper .swiper-slide .card {
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* 슬라이드가 1개만 보이는 모바일에서는 확대할 상대가 없어 의미가 없고, 오히려 좌우가 잘린다 */
+@media (min-width: 576px) {
+    .movieSwiper .swiper-slide-active .card {
+        transform: scale(1.12);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 5;
+    }
+}
+
+.survey-prompt-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 20, 0.55); /* 뒤쪽 메인페이지 반투명 처리 */
+    backdrop-filter: blur(2px);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.survey-prompt-card {
+    position: relative;
+    background: var(--bg-main);
+    width: 100%;
+    max-width: 420px;
+    border-radius: 24px;
+    padding: 40px 32px 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.survey-prompt-logo-img {
+    height: 40px;
+    width: auto;
+}
+
+.survey-prompt-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    font-weight: 500;
+}
+
+.survey-prompt-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    border: none;
+    background: transparent;
+    font-size: 1.1rem;
+    color: var(--text-dark); /* #333 -> 변수로 교체 */
+    cursor: pointer;
+}
+
+.survey-prompt-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(250, 82, 82, 0.12); /* --point-red를 12% 톤으로 연하게 */
+    color: var(--point-red); /* #e02424 -> 변수로 교체 */
+    flex-shrink: 0;
+}
+
+.btn-point {
+    background-color: var(--point-red);
+    border-color: var(--point-red);
+    color: #fff;
+}
+.btn-point:hover {
+    background-color: #e03e3e;
+    border-color: #e03e3e;
+    color: #fff;
+}
+.btn-point:disabled {
+    background-color: #f3a9a9;
+    border-color: #f3a9a9;
+}
+
+/* 설문조사 순위 선택 버튼 */
+.survey-rank-btn {
+    position: relative;
+    padding: 14px 22px;
+    border-radius: 16px;
+    border: 2px solid #e9ecef;
+    background: #fff;
+    color: var(--text-dark);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.15s;
+    min-width: 96px;
+}
+.survey-rank-btn:hover {
+    border-color: var(--point-red);
+}
+.survey-rank-btn.selected {
+    border-color: var(--point-red);
+    background: rgba(250, 82, 82, 0.08);
+    color: var(--point-red);
+}
+.survey-rank-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--point-red);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 설문조사 단계 표시(스텝 인디케이터) */
+.survey-step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #adb5bd;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.survey-step-dot-active {
+    background: var(--point-red);
+    color: #fff;
+}
+.survey-step-line {
+    width: 40px;
+    height: 2px;
+    background: #e9ecef;
+}
+
+/* 마이페이지 좌측 공통 메뉴 */
+.mypage-nav-link {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 12px;
+    color: var(--text-dark);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.92rem;
+    transition: 0.15s;
+}
+.mypage-nav-link:hover {
+    background: rgba(250, 82, 82, 0.08);
+}
+.mypage-nav-link-active {
+    background: var(--point-red);
+    color: #fff;
+}
+
+/* 마이페이지 헤더 배너 안 작은 통계 박스 */
+.mypage-stat-box {
+    display:inline-block;
+    background: rgba(255,255,255,0.1);
+    border-radius:12px;
+    padding:6px 12px;
+}
+
+/* 취향 분석 페이지 전용 스타일은 css/taste-analysis.css 로 분리 */
+
+/* 메인 퀵 메뉴 (로그인 사용자 전용 섹션).
+   칸마다 글자 수가 달라도 높이가 어긋나지 않도록 height:100% */
+.quick-menu-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 100%;
+    padding: 18px 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    color: #212529;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.quick-menu-item:hover {
+    border-color: var(--point-red);
+    color: var(--point-red);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+.quick-menu-item i {
+    font-size: 1.5rem;
+    color: var(--point-red);
+    margin-bottom: 2px;
+}
+
+.quick-menu-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+/* 설명은 호버해도 색을 바꾸지 않음 — 제목까지 빨개지면 두 줄의 위계가 사라짐 */
+.quick-menu-desc {
+    font-size: 0.78rem;
+    color: #868e96;
+    word-break: keep-all;  /* '최근 본 영화'가 좁은 폭에서 글자 단위로 끊기지 않게 */
+}

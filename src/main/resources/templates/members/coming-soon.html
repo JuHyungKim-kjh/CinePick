@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>CinePick - 준비 중</title>
+</head>
+<body>
+<main class="container my-5">
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{members/sidebar :: sidebar(${activeMenu})}"></div>
+        </div>
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+                <i class="bi bi-tools fs-1 text-point mb-3 d-block"></i>
+                <h4 class="fw-bold mb-2" th:text="${sectionTitle} + ' 페이지 준비 중이에요'">준비 중</h4>
+                <p class="text-muted mb-0">더 나은 화면으로 곧 찾아뵐게요.</p>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

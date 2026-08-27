@@ -1,0 +1,23 @@
+# 이 파일을 application-local.yaml 로 복사한 뒤 각자 값을 채워 쓴다.
+# application-local.yaml 은 .gitignore 에 걸려 있어 저장소에 올라가지 않는다.
+#
+# 배포 환경에서는 이 파일 대신 환경변수를 쓴다:
+#   SPRING_PROFILES_ACTIVE=prod
+#   DB_URL / DB_USERNAME / DB_PASSWORD
+#   KOBIS_API_KEY / TMDB_API_KEY / CLAUDE_API_KEY
+
+spring:
+  datasource:
+    # 기본 접속 주소는 application.yaml 의 DB_URL 기본값(localhost:3306/CinePick)을 쓴다.
+    # 다른 곳에 붙이려면 여기서 url 을 덮어쓴다.
+    username: 여기에_DB_사용자명
+    password: 여기에_DB_비밀번호
+
+api:
+  kobis:
+    key: 여기에_KOBIS_API_키
+  tmdb:
+    key: 여기에_TMDB_API_키
+  claude:
+    # 비워두면 AI 분위기 분석이 꺼지고 장르 기반 분석으로 자동 대체된다
+    key: 여기에_CLAUDE_API_키

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>CinePick - 회원정보 조회</title>
+</head>
+<body>
+<main class="container my-5">
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{members/sidebar :: sidebar('info')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 p-md-5" style="max-width: 500px;">
+                    <h4 class="fw-bold mb-1">회원정보 조회</h4>
+                    <p class="text-muted small mb-4">닉네임과 비밀번호를 수정할 수 있어요.</p>
+
+                    <div th:if="${errorMessage}" class="alert alert-danger py-2 small" th:text="${errorMessage}"></div>
+                    <div th:if="${param.updated}" class="alert alert-success py-2 small">회원정보가 수정되었습니다.</div>
+
+                    <form th:action="@{/members/info}" method="post">
+                        <div class="mb-3">
+                            <label for="email" class="form-label small fw-bold">이메일 주소</label>
+                            <input type="email" class="form-control" id="email" th:value="${member.email}" disabled readonly>
+                            <div class="form-text">이메일은 변경할 수 없습니다.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nickname" class="form-label small fw-bold">닉네임</label>
+                            <input type="text" class="form-control" id="nickname" name="nickname" th:value="${member.nickname}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label small fw-bold">비밀번호</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="변경하실 경우에만 입력해주세요">
+                        </div>
+                        <div class="mb-4">
+                            <label for="passwordConfirm" class="form-label small fw-bold">비밀번호 확인</label>
+                            <input type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" placeholder="비밀번호를 한 번 더 입력해주세요">
+                        </div>
+
+                        <button type="submit" class="btn btn-point fw-bold px-4">저장하기</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

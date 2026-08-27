@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>CinePick - 영화 상세</title>
+</head>
+<body>
+<main class="container my-5">
+
+    <!-- 브레드크럼 · 뒤로가기 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/static}" class="text-decoration-none text-muted"><i class="bi bi-house-door"></i> 홈</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/movies}" class="text-decoration-none text-muted">영화</a></li>
+                <li class="breadcrumb-item active fw-bold text-dark" aria-current="page" th:text="${movie.title}">영화 제목</li>
+            </ol>
+        </nav>
+        <a href="javascript:history.back()" class="btn btn-light border rounded-pill px-3 fw-bold small">
+            <i class="bi bi-arrow-left"></i> 목록으로
+        </a>
+    </div>
+
+    <!-- 영화 상세 정보 카드 -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="row g-5">
+            <!-- 좌측: 포스터 -->
+            <div class="col-md-5 col-lg-4 position-relative">
+                <!-- 상태 뱃지 -->
+                <div th:if="${movieStatus == 'NOW'}" class="position-absolute top-0 start-0 m-3 px-3 py-1 bg-dark text-white fw-bold rounded-pill" style="z-index: 10;">
+                    현재 상영작
+                </div>
+                <div th:if="${movieStatus == 'UPCOMING'}" class="position-absolute top-0 start-0 m-3 px-3 py-1 bg-primary text-white fw-bold rounded-pill" style="z-index: 10;">
+                    상영 예정작
+                </div>
+
+                <!-- 이미지가 깨지면 기본 회색 이미지로 교체 -->
+                <img th:src="${movie.posterUrl}"
+                     onerror="this.src='https://via.placeholder.com/400x570?text=No+Poster'"
+                     class="card-img-top hover-opacity" alt="포스터" style="width: 100%; height: auto; object-fit: contain;">
+            </div>
+
+            <!-- 우측: 정보 -->
+            <div class="col-md-7 col-lg-8">
+                <h2 class="fw-bold mb-1" th:text="${movie.title}">영화 제목</h2>
+                <p class="text-muted mb-4 text-uppercase" th:text="${movie.titleEn}">English Title</p>
+
+                <table class="table table-borderless align-middle mt-4">
+                    <tbody>
+                    <tr class="border-bottom">
+                        <th class="text-dark fw-bold w-25 py-3">영화코드</th>
+                        <td class="text-muted py-3" th:text="${movie.movieCd}">코드</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <th class="text-dark fw-bold py-3">제작연도</th>
+                        <td class="text-muted py-3" th:text="${movie.prdtYear}">연도</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <th class="text-dark fw-bold py-3">개봉일</th>
+                        <td class="text-muted py-3" th:text="${movie.openDate}">개봉일</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <th class="text-dark fw-bold py-3">국가</th>
+                        <td class="text-muted py-3" th:text="${movie.nationAlt}">한국</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <th class="text-dark fw-bold py-3">장르</th>
+                        <td class="text-muted py-3" th:text="${movie.genre}">액션</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark fw-bold py-3">감독</th>
+                        <td class="text-muted py-3" th:text="${movie.director}">감독명</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 예매 카드 (상태별 분기) -->
+
+    <!-- [A] 현재 상영작 — 상영 중인 사이트 버튼만 -->
+    <div class="card border-0 shadow-sm rounded-4 p-5" th:if="${movieStatus == 'NOW'}">
+        <h4 class="fw-bold mb-4">예매 가능 사이트</h4>
+        <div class="row g-3">
+            <!-- data-reservation-site 는 로그인 사용자에게만 붙는다. reservation-click.js 가 이 속성으로 리스너를 건다 -->
+            <div class="col-md-4" th:if="${movie.cgvUrl != null}">
+                <a th:href="${movie.cgvUrl}" target="_blank" class="btn btn-outline-danger w-100 py-3 fw-bold border-point bg-white rounded-3 fs-5"
+                   th:attr="data-reservation-site=${isLoggedIn} ? 'CGV' : null, data-movie-cd=${movie.movieCd}">
+                    CGV <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                </a>
+            </div>
+            <div class="col-md-4" th:if="${movie.megaboxUrl != null}">
+                <a th:href="${movie.megaboxUrl}" target="_blank" class="btn btn-outline-danger w-100 py-3 fw-bold border-point bg-white rounded-3 fs-5"
+                   th:attr="data-reservation-site=${isLoggedIn} ? 'MEGABOX' : null, data-movie-cd=${movie.movieCd}">
+                    MEGABOX <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                </a>
+            </div>
+            <div class="col-md-4" th:if="${movie.lotteUrl != null}">
+                <a th:href="${movie.lotteUrl}" target="_blank" class="btn btn-outline-danger w-100 py-3 fw-bold border-point bg-white rounded-3 fs-5"
+                   th:attr="data-reservation-site=${isLoggedIn} ? 'LOTTE' : null, data-movie-cd=${movie.movieCd}">
+                    LOTTE CINEMA <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                </a>
+            </div>
+        </div>
+        <p class="text-muted small mt-4 mb-0"
+           th:if="${movie.cgvUrl == null and movie.megaboxUrl == null and movie.lotteUrl == null}">
+            예매 가능한 사이트 정보를 아직 확인하지 못했습니다.
+        </p>
+        <p class="text-muted small mt-4 mb-0"
+           th:unless="${movie.cgvUrl == null and movie.megaboxUrl == null and movie.lotteUrl == null}">
+            * 예매는 각 연결 사이트에서 진행되며, CinePick은 링크만 제공합니다.
+        </p>
+    </div>
+    <!-- [B] 상영 예정작 — 크롤링한 개봉일 기준 D-Day -->
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center" th:if="${movieStatus == 'UPCOMING'}">
+        <h5 class="fw-bold text-muted mb-3">개봉까지 남은 시간</h5>
+
+        <div th:if="${movie.dDayLabel != null}">
+            <div class="display-4 fw-bold mb-2" style="color: var(--point-red);" th:text="${movie.dDayLabel}">D-7</div>
+            <p class="text-dark fw-medium mb-0" th:text="${movie.upcomingDateLabel}">개봉 예정</p>
+        </div>
+
+        <p class="text-muted mb-0" th:if="${movie.dDayLabel == null}">
+            정확한 개봉일 정보를 아직 확인하지 못했습니다.
+        </p>
+    </div>
+
+    <!-- [C] 그 외(ENDED)는 렌더하지 않음 -->
+
+    <!-- layout 이 main 만 렌더하므로 스크립트는 main 안에 둘 것 -->
+    <script defer th:src="@{/js/reservation-click.js}" th:if="${isLoggedIn}"></script>
+</main>
+</body>
+</html>
