@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>CinePick - 자주 묻는 질문</title>
+</head>
+<body>
+<main class="container my-5">
+
+    <div th:replace="~{cs/tabs :: tabs(${activeTab})}"></div>
+
+    <div th:if="${successMessage}" class="alert alert-success py-2 small" th:text="${successMessage}"></div>
+
+    <!-- 분류 거르개. 전부 내려보내고 화면에서 감춘다
+         (분류마다 서버를 다녀오면 열어 둔 답변이 닫히고 스크롤이 튄다) -->
+    <div class="cs-filter" th:if="${!categories.isEmpty()}">
+        <button type="button" class="cs-chip cs-chip-active" data-category="all">전체</button>
+        <button type="button" class="cs-chip"
+                th:each="category : ${categories}"
+                th:attr="data-category=${category}"
+                th:text="${category}">분류</button>
+    </div>
+
+    <!-- 운영자 전용 작성 버튼 -->
+    <div class="d-flex justify-content-end mb-3" sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/cs/admin/faqs/new}" class="btn btn-point btn-sm rounded-pill px-3">
+            <i class="bi bi-plus-lg me-1"></i> FAQ 작성
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-0 overflow-hidden" id="faqList">
+
+        <div th:if="${faqs.isEmpty()}" class="p-5 text-center text-muted">
+            <i class="bi bi-question-circle fs-1 d-block mb-3 opacity-50"></i>
+            아직 등록된 질문이 없어요.
+        </div>
+
+        <div th:each="faq : ${faqs}" class="cs-faq-item" th:attr="data-category=${faq.category}">
+            <!-- 질문 줄 전체가 버튼 -->
+            <button type="button" class="cs-faq-question">
+                <span class="cs-faq-category" th:text="${faq.category}">분류</span>
+                <span class="cs-faq-text" th:text="${faq.question}">질문</span>
+                <i class="bi bi-chevron-down cs-faq-arrow"></i>
+            </button>
+            <div class="cs-faq-answer">
+                <div class="cs-content" th:text="${faq.answer}">답변</div>
+
+                <!-- 관리 버튼은 펼친 안쪽에. 접힌 줄에 붙이면 질문을 누를 자리를 잠식한다 -->
+                <div class="cs-admin-actions" sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/cs/admin/faqs/{id}/edit(id=${faq.id})}"
+                       class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <i class="bi bi-pencil me-1"></i> 수정
+                    </a>
+                    <form th:action="@{/cs/admin/faqs/{id}/delete(id=${faq.id})}" method="post"
+                          class="cs-delete-form" data-confirm="이 질문을 삭제할까요? 되돌릴 수 없습니다.">
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                            <i class="bi bi-trash me-1"></i> 삭제
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 거르개로 모두 감춰졌을 때 스크립트가 켜고 끈다 -->
+        <div class="p-5 text-center text-muted d-none" id="faqEmpty">
+            이 분류에는 아직 질문이 없어요.
+        </div>
+
+    </div>
+
+    <!-- 답을 못 찾은 사람을 상담으로 연결 -->
+    <div class="cs-callout mt-4">
+        <div>
+            <div class="fw-bold mb-1">찾으시는 답이 없나요?</div>
+            <div class="text-muted small mb-0">1:1 상담으로 남겨주시면 확인 후 답변드릴게요.</div>
+        </div>
+        <a th:href="@{/cs/inquiry}" class="btn btn-point rounded-pill px-4 flex-shrink-0">
+            <i class="bi bi-chat-dots me-1"></i> 1:1 상담하기
+        </a>
+    </div>
+
+    <script defer th:src="@{/js/cs-faq.js}"></script>
+    <script defer th:src="@{/js/cs-admin.js}"></script>
+
+</main>
+</body>
+</html>

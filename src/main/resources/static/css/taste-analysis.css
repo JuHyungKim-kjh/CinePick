@@ -1,0 +1,457 @@
+/* 취향 분석 페이지(/recommendations) 전용 */
+
+/* 선호도 막대그래프 한 줄 */
+.pref-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.pref-bar-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+}
+
+.pref-bar-label {
+    /* 「카타르시스」(5글자)가 한 줄에 들어가야 함 — 66px 에서는 쪼개졌음 */
+    width: 78px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.pref-bar-track {
+    flex: 1;
+    height: 10px;
+    border-radius: 6px;
+    background: #eee;
+    overflow: hidden;
+}
+
+.pref-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: var(--point-red);
+    transition: width 0.35s ease;
+}
+
+.pref-bar-percent {
+    width: 46px;
+    text-align: right;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+/* 점수가 없는 항목은 흐리게 */
+.pref-bar-row.is-empty .pref-bar-icon { opacity: 0.35; }
+.pref-bar-row.is-empty .pref-bar-label,
+.pref-bar-row.is-empty .pref-bar-percent { color: #adb5bd; }
+
+/* 기피 항목 (합산 점수가 0 미만).
+   막대가 0% 로 누워 is-empty 와 같아 보이므로 파란 계열로 구분 (이 페이지에서 파랑은 '낮추는 쪽') */
+.pref-bar-row.is-avoided .pref-bar-icon {
+    opacity: 0.45;
+    filter: grayscale(1);
+}
+
+.pref-bar-row.is-avoided .pref-bar-label { color: #4DABF7; }
+
+/* 빈 트랙에 옅은 파란 기운을 남겨 '없음'이 아니라 '내려감'을 표시 */
+.pref-bar-row.is-avoided .pref-bar-track { background: #e7f2fd; }
+
+.pref-bar-percent.is-avoided-mark {
+    color: #4DABF7;
+    font-size: 0.75rem;
+    cursor: help;
+}
+
+/* 순위 보기 모드의 순위 뱃지 */
+.pref-rank-mark {
+    width: 46px;
+    text-align: right;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--point-red);
+}
+.pref-rank-mark.is-none { color: #ced4da; }
+
+/* 비율 보기 / 순위 보기 전환 토글 */
+.pref-view-toggle {
+    display: inline-flex;
+    background: #f1f3f5;
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+}
+
+.pref-view-btn {
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #868e96;
+    cursor: pointer;
+    transition: 0.15s;
+}
+
+.pref-view-btn.active {
+    background: #fff;
+    color: var(--point-red);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* 상단 배너 통계 타일 4칸.
+   .mypage-stat-box(style.css)는 내용에 따라 높이가 늘어나 배너가 어긋나므로 여기서만 고정 */
+.taste-stat-tile {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px 10px;
+    min-height: 74px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+.taste-stat-value {
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1.25;
+    /* 값은 최대 두 줄까지 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    /* keep-all 이어야 한국어가 단어 단위로 접힘 */
+    word-break: keep-all;
+}
+
+.taste-stat-label {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.55);
+    white-space: nowrap; /* 「선호 분위기 TOP」이 두 줄로 접히지 않도록 */
+}
+
+/* 판단 비중 막대 */
+.weight-bar {
+    display: flex;
+    height: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f1f3f5;
+    margin-bottom: 8px;
+}
+
+.weight-seg {
+    height: 100%;
+}
+
+.weight-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    color: #495057;
+}
+
+.weight-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.weight-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* 취향을 깎아내리는 쪽으로 작용한 출처 */
+.weight-down {
+    color: #4DABF7;
+    font-size: 0.72rem;
+    cursor: help;
+}
+
+.weight-note {
+    font-size: 0.75rem;
+    color: #868e96;
+    margin-bottom: 16px;
+}
+
+/* 분석에 반영된 데이터 (점수 출처 카드) */
+.source-card {
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 16px;
+    height: 100%;
+}
+
+.source-card-icon {
+    font-size: 1.4rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.source-card.is-ready .source-card-icon { color: var(--point-red); }
+.source-card.is-pending .source-card-icon { color: #ced4da; }
+
+.source-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 10px;
+    margin-bottom: 6px;
+}
+
+.source-badge.is-ready {
+    background: rgba(250, 82, 82, 0.12);
+    color: var(--point-red);
+}
+
+.source-badge.is-pending {
+    background: #f1f3f5;
+    color: #868e96;
+}
+
+.source-card-detail {
+    font-size: 0.75rem;
+    color: #868e96;
+    line-height: 1.45;
+}
+
+/* AI 취향 인사이트 카드 (어두운 배너 위) */
+.insight-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 18px;
+    height: 100%;
+}
+
+.insight-card-title {
+    color: var(--point-red);
+    font-weight: 700;
+    font-size: 0.92rem;
+    margin-bottom: 8px;
+}
+
+.insight-card-body {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.insight-chip {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-radius: 999px;
+    padding: 3px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 0 4px 4px 0;
+}
+
+/* 취향 수정 - 축 조절판 (장르 8 + 분위기 5) */
+.axis-group-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding-bottom: 7px;
+    border-bottom: 1px solid #f1f3f5;
+    margin-bottom: 10px;
+}
+
+.axis-group-head .text-muted { font-size: 0.75rem; }
+
+.axis-row {
+    display: grid;
+    /* 라벨 폭 고정 — 안 하면 줄마다 슬라이더 시작점이 어긋남 (가장 긴 「카타르시스」 기준) */
+    grid-template-columns: 9px 78px 1fr 34px;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+}
+
+.axis-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+}
+
+.axis-name {
+    font-size: 0.83rem;
+    font-weight: 600;
+    white-space: nowrap;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* 슬라이더 모양은 아래 '슬라이더 공통' 절에서 .pref-slider 와 함께 정의 */
+.axis-range { width: 100%; }
+
+.axis-value {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: right;
+    color: #495057;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 0 으로 내린 축은 흐리게 */
+.axis-row.is-zero .axis-dot { opacity: 0.3; }
+.axis-row.is-zero .axis-name,
+.axis-row.is-zero .axis-value { color: #adb5bd; }
+
+/* 취향 수정 - 판단 비중 */
+.weight-control {
+    background: #f8f9fa;
+    border: 1px solid #eef0f3;
+    border-radius: 14px;
+    padding: 16px 18px;
+}
+
+.weight-split {
+    display: flex;
+    height: 9px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e9ecef;
+    margin-top: 12px;
+}
+
+.weight-split span {
+    height: 100%;
+    transition: width 0.25s ease;
+}
+
+/* 색은 판단 비중 막대의 출처 색과 같음 (설문 = 포인트 레드, 예매 = 파랑) */
+#weightSplitSurvey { background: var(--point-red); }
+#weightSplitHistory { background: #4DABF7; }
+
+.weight-split-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #868e96;
+    margin-top: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .weight-split span { transition: none; }
+}
+
+/* 취향 수정 - 슬라이더 */
+.pref-slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.pref-slider-value {
+    color: var(--point-red);
+    font-weight: 800;
+}
+
+/* 슬라이더 공통 (.axis-range · .pref-slider).
+   accent-color 만 주면 Chrome 이 빈 트랙을 거의 검게 그림(color-scheme 으로 못 고침) — 트랙을 직접 그린다.
+   채움 구간은 --pct. WebKit 에 진행 구간 의사요소가 없어 taste-analysis.js 의 syncRangeFill() 이 갱신 */
+.pref-slider,
+.axis-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 16px;          /* 트랙보다 두껍게 잡아 손가락·마우스가 집기 쉽게 */
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
+}
+
+.pref-slider::-webkit-slider-runnable-track,
+.axis-range::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(to right,
+        var(--point-red) 0 var(--pct, 0%), #e9ecef var(--pct, 0%) 100%);
+}
+
+.pref-slider::-webkit-slider-thumb,
+.axis-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    margin-top: -4.5px;    /* (트랙 6px − 손잡이 15px) / 2 */
+    border-radius: 50%;
+    background: var(--point-red);
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.pref-slider::-moz-range-track,
+.axis-range::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: #e9ecef;
+}
+
+.pref-slider::-moz-range-progress,
+.axis-range::-moz-range-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--point-red);
+}
+
+.pref-slider::-moz-range-thumb,
+.axis-range::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--point-red);
+    border: 2px solid #fff;
+}
+
+/* appearance:none 이 지운 포커스 링을 되살림 */
+.pref-slider:focus-visible,
+.axis-range:focus-visible {
+    outline: 2px solid var(--point-red);
+    outline-offset: 2px;
+    border-radius: 999px;
+}
+
+.pref-slider-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #868e96;
+}
+
+/* 설문 미완료 안내 */
+.taste-empty-icon {
+    font-size: 2.5rem;
+    color: var(--point-red);
+    display: block;
+    margin-bottom: 12px;
+}

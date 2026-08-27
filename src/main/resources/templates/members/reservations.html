@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>CinePick - 예매/취소 내역</title>
+</head>
+<body>
+<main class="container my-5">
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{members/sidebar :: sidebar('reservations')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-1">예매/취소 내역</h5>
+                <p class="text-muted small mb-4">
+                    예매 사이트로 이동한 기록이에요. CinePick은 예매를 대신 처리하지 않기 때문에,
+                    실제 예매 여부는 회원님이 직접 확인해주셔야 해요.
+                </p>
+
+                <!-- 내역 없음 -->
+                <div class="list-empty" th:if="${#lists.isEmpty(reservations)}">
+                    <i class="bi bi-ticket-perforated"></i>
+                    <p class="mb-3">아직 예매 내역이 없어요.</p>
+                    <a th:href="@{/movies}" class="btn btn-point fw-bold rounded-3 px-4">영화 보러 가기</a>
+                </div>
+
+                <!-- 내역 목록 -->
+                <div th:each="item : ${reservations}" class="history-row"
+                     th:attr="data-reservation-id=${item.id}">
+
+                    <a th:href="@{'/movies/detail/' + ${item.movieCd}}">
+                        <img class="history-poster" th:src="${item.posterUrl}"
+                             onerror="this.src='/images/Logo.png'" th:alt="${item.title}">
+                    </a>
+
+                    <div class="history-info">
+                        <a th:href="@{'/movies/detail/' + ${item.movieCd}}" class="text-decoration-none">
+                            <div class="history-title" th:text="${item.title}">영화 제목</div>
+                        </a>
+                        <div class="history-meta">
+                            <span th:text="${item.site}">CGV</span>
+                            &middot;
+                            <span th:text="${item.clickedAt}">2026.08.12 14:00</span>
+                        </div>
+                        <div class="history-meta" th:if="${item.decidedAt != null}">
+                            확인일 <span th:text="${item.decidedAt}">2026.08.12 20:00</span>
+                        </div>
+                    </div>
+
+                    <div class="text-end flex-shrink-0">
+                        <!-- 상태 배지 — 색은 서버가 내려준 status 로 정함 -->
+                        <span class="status-badge"
+                              th:classappend="${item.status == 'PENDING'} ? 'is-pending'
+                                            : (${item.status == 'CONFIRMED'} ? 'is-confirmed' : 'is-canceled')"
+                              th:text="${item.statusLabel}">확인 대기</span>
+
+                        <!-- 팝업을 놓친 경우를 위해 이 화면에서도 확인 -->
+                        <div class="mt-2" th:if="${item.pending}">
+                            <button type="button" class="btn btn-sm btn-point fw-bold rounded-3 history-decide"
+                                    th:attr="data-id=${item.id}, data-booked=true">예매함</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary fw-bold rounded-3 history-decide"
+                                    th:attr="data-id=${item.id}, data-booked=false">안 함</button>
+                        </div>
+
+                        <!-- 평점 기회가 남아 있으면 평점 화면으로 안내 -->
+                        <div class="mt-2" th:if="${item.ratingAvailable}">
+                            <a th:href="@{/members/ratings}" class="btn btn-sm btn-outline-danger fw-bold rounded-3">
+                                <i class="bi bi-star"></i> 평점 남기기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- layout 이 main 만 렌더하므로 스크립트는 main 안에 둘 것 -->
+    <script defer th:src="@{/js/reservation-history.js}"></script>
+</main>
+</body>
+</html>

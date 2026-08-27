@@ -1,0 +1,58 @@
+### 민감 정보 ###
+# 실제 값이 담긴 로컬 설정. .example 파일만 저장소에 올린다
+config/application-local.yaml
+config/application-local.yml
+# 혹시 resources 안에 만들더라도 올라가지 않도록 함께 막아둔다
+src/main/resources/application-local.yaml
+src/main/resources/application-local.yml
+src/main/resources/application-secret.yaml
+.env
+.env.*
+!.env.example
+
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### 개발 중 스크린샷 ###
+# 해결된 버그의 흔적이라 저장소에 남길 이유가 없다.
+# 화면 소개용 이미지(Home.png 등)는 그대로 둔다.
+오류*.PNG
+오류*.png
+
+### 개인 도구 설정 ###
+.claude/settings.local.json

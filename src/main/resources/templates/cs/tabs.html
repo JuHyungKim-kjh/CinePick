@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<!--
+  고객지원 세 화면(공지사항 · FAQ · 1:1 상담)이 공유하는 머리글.
+  active 는 컨트롤러가 넘긴 activeTab (notices / faqs / inquiry, 운영자 화면은 inquiry-admin).
+-->
+<div th:fragment="tabs(active)">
+
+    <div class="cs-header">
+        <h3 class="fw-bold mb-2">고객지원</h3>
+        <p class="text-muted mb-0">
+            궁금한 점이 있으신가요? 공지사항과 자주 묻는 질문을 먼저 확인해 보시고,
+            해결되지 않으면 1:1 상담으로 알려주세요.
+        </p>
+    </div>
+
+    <div class="cs-tabs">
+        <a th:href="@{/cs/notices}" class="cs-tab"
+           th:classappend="${active == 'notices'} ? 'cs-tab-active'">
+            <i class="bi bi-megaphone"></i> 공지사항
+        </a>
+        <a th:href="@{/cs/faqs}" class="cs-tab"
+           th:classappend="${active == 'faqs'} ? 'cs-tab-active'">
+            <i class="bi bi-question-circle"></i> FAQ
+        </a>
+        <a th:href="@{/cs/inquiry}" class="cs-tab"
+           th:classappend="${active == 'inquiry'} ? 'cs-tab-active'">
+            <i class="bi bi-chat-dots"></i> 1:1 상담
+        </a>
+
+        <!-- 운영자 전용 탭. 옆의 '1:1 상담'을 그대로 둔 것은
+             운영자도 회원 화면이 어떻게 보이는지 확인할 수 있어야 하기 때문 -->
+        <a th:href="@{/cs/admin/inquiries}" class="cs-tab cs-tab-admin"
+           th:classappend="${active == 'inquiry-admin'} ? 'cs-tab-active'"
+           sec:authorize="hasRole('ADMIN')">
+            <i class="bi bi-reply"></i> 문의 답변
+        </a>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>CinePick - 메인</title>
+</head>
+<body>
+<main>
+    <div class="container my-5">
+
+        <!-- 섹션 1: 통합 상영작 슬라이더 -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex gap-2 bg-white rounded-pill p-1 shadow-sm border">
+                    <a th:href="@{/(tab='now')}"
+                       class="btn rounded-pill px-4 fw-bold"
+                       th:classappend="${currentTab == 'now'} ? 'btn-dark' : 'btn-light text-muted'">현재 상영작</a>
+
+                    <a th:href="@{/(tab='upcoming')}"
+                       class="btn rounded-pill px-4 fw-bold"
+                       th:classappend="${currentTab == 'upcoming'} ? 'btn-dark' : 'btn-light text-muted'">상영 예정작</a>
+                </div>
+                <a th:href="@{/movies}" class="text-decoration-none text-muted fw-bold small hover-opacity">전체 보기 ></a>
+            </div>
+
+            <div class="swiper movieSwiper py-3 position-relative">
+                <div class="swiper-wrapper">
+
+                    <div class="swiper-slide" th:if="${#lists.isEmpty(movies)}">
+                        <div class="card border-0 shadow-sm h-100 d-flex flex-column justify-content-center align-items-center" style="border-radius: 15px; min-height: 430px;">
+                            <p class="text-muted fw-bold">수집된 영화가 없습니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="swiper-slide" th:each="movie, stat : ${movies}">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; overflow: hidden;">
+                            <div class="position-relative">
+                                <div class="movie-badge position-absolute top-0 start-0 m-2 px-2 py-1 text-white fw-bold rounded"
+                                     th:text="${stat.count}">1</div>
+
+                                <img th:src="${movie.posterUrl}" onerror="this.src='/images/Logo.png'" class="card-img-top" alt="영화 포스터" style="height: 400px; object-fit: cover;">
+                            </div>
+
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold text-truncate mb-1" th:text="${movie.title}">영화 제목</h6>
+                                <p class="small text-muted mb-2 text-truncate" th:text="${movie.genre}">장르</p>
+
+                                <div class="d-flex align-items-center mb-3 small fw-bold">
+                                    <span class="me-2" style="color: var(--point-red);"><i class="bi bi-star-fill"></i> 0.0</span>
+                                    <span class="text-muted" th:text="${currentTab == 'now'} ? '예매율 -%' : '개봉예정'">예매율 -%</span>
+                                </div>
+
+                                <a th:href="@{/movies/detail/{id}(id=${movie.movieCd})}" class="btn w-100 fw-bold bg-white rounded-3" style="border: 1px solid var(--point-red); color: var(--point-red);">예매하기</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </section>
+
+        <!-- 섹션 2-A: 취향 정보가 있을 때 — AI 큐레이션 + 취향 프로필 -->
+        <section class="row mb-5 align-items-stretch"
+                 th:if="${curationList != null and !curationList.isEmpty()}">
+            <div class="col-lg-8 mb-4 mb-lg-0">
+                <!-- 여기에 d-flex flex-column 을 주면 안 된다.
+                     .curationSwiper 가 flex item 이 되면서 폭이 매 프레임 증폭된다 -->
+                <div class="bg-dark-section rounded p-4 h-100">
+                    <h4 class="mb-1 text-white">✨ AI 맞춤형 큐레이션</h4>
+                    <p class="text-light opacity-75 mb-3">회원님의 취향을 분석해 고른 작품이에요</p>
+
+                    <div class="swiper curationSwiper position-relative">
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide" th:each="item : ${curationList}">
+                                <a th:href="@{'/movies/detail/' + ${item.movieCd}}" class="curation-card">
+                                    <div class="curation-poster">
+                                        <img th:src="${item.posterUrl}" onerror="this.src='/images/Logo.png'"
+                                             th:alt="${item.title}" loading="lazy">
+                                        <span class="curation-match" th:text="${item.matchPercent} + '%'">0%</span>
+                                    </div>
+                                    <div class="curation-title" th:text="${item.title}">제목</div>
+                                    <div class="curation-genre" th:text="${item.genre}">장르</div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="swiper-button-next curation-nav"></div>
+                        <div class="swiper-button-prev curation-nav"></div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a th:href="@{/recommendations}" class="text-white text-decoration-none">
+                            ✨ 내 취향을 더 자세히 보고 싶다면? <strong>취향 분석 보기 ></strong>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="bg-white rounded p-4 h-100 border shadow-sm taste-profile">
+                    <div class="profile-head">
+                        <h5 class="mb-0">나의 취향 프로필</h5>
+                        <!-- Bootstrap 툴팁 JS 를 초기화하지 않으므로 브라우저 기본 title 을 쓴다 -->
+                        <i class="bi bi-info-circle profile-info"
+                           title="설문에서 고른 취향과 예매·평점 이력을 합쳐 계산한 값이에요. 취향 분석 페이지에서 직접 조정할 수 있어요."></i>
+                    </div>
+
+                    <!-- 선호 장르 TOP 3 -->
+                    <div class="profile-section">
+                        <div class="profile-label">선호 장르 TOP 3</div>
+
+                        <div class="profile-pending" th:if="${#lists.isEmpty(profileGenres)}">아직 보여드릴 장르가 없어요</div>
+
+                        <div class="profile-bar" th:each="row : ${profileGenres}">
+                            <div class="profile-bar-track">
+                                <!-- 채움 폭은 퍼센트지만 min-width 로 글자 폭을 보장 (낮은 값에서 라벨이 삐져나온다) -->
+                                <span class="profile-bar-fill"
+                                      th:style="'width:' + ${row.percent} + '%; background-color:' + ${row.colorHex}"
+                                      th:text="${row.label}">장르</span>
+                            </div>
+                            <span class="profile-bar-percent" th:text="${row.percent} + '%'">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- 최근 관람 & 평점 -->
+                    <div class="profile-section">
+                        <div class="profile-section-head">
+                            <div class="profile-label mb-0">최근 관람 &amp; 평점</div>
+                            <a th:href="@{/members/ratings}" class="profile-more">전체 보기 &gt;</a>
+                        </div>
+
+                        <div class="profile-pending" th:if="${#lists.isEmpty(profileWatched)}">예매를 확정하면 여기에 쌓여요</div>
+
+                        <a class="profile-watched" th:each="item : ${profileWatched}"
+                           th:href="@{'/movies/detail/' + ${item.movieCd}}">
+                            <img class="profile-watched-poster" th:src="${item.posterUrl}"
+                                 onerror="this.src='/images/Logo.png'" th:alt="${item.title}" loading="lazy">
+                            <span class="profile-watched-title" th:text="${item.title}">제목</span>
+
+                            <span class="profile-watched-score" th:if="${item.rated}">
+                                <i class="bi bi-star-fill"></i><span th:text="${item.score}">0</span>
+                            </span>
+                            <!-- 예매만 확정하고 평점을 안 남긴 영화도 오른다 -->
+                            <span class="profile-watched-score is-unrated" th:unless="${item.rated}">미평가</span>
+                        </a>
+                    </div>
+
+                    <!-- 자주 선택하는 무드 -->
+                    <div>
+                        <div class="profile-label">자주 선택하는 무드</div>
+
+                        <div class="profile-pending" th:if="${#lists.isEmpty(profileMoods)}">아직 보여드릴 무드가 없어요</div>
+
+                        <div class="profile-moods" th:unless="${#lists.isEmpty(profileMoods)}">
+                            <div class="profile-mood" th:each="row : ${profileMoods}"
+                                 th:title="${row.label} + ' ' + ${row.percent} + '%'">
+                                <!-- 색상 뒤 '26' = 같은 색의 15% 배경(8자리 hex). 아이콘 색과 늘 짝이 맞는다 -->
+                                <span class="profile-mood-icon"
+                                      th:style="'background-color:' + ${row.colorHex} + '26; color:' + ${row.colorHex}">
+                                    <i th:class="${row.iconClass}"></i>
+                                </span>
+                                <span class="profile-mood-label" th:text="${row.label}">무드</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 섹션 2-B: 취향 정보가 없을 때 — 박스오피스 순위 (취향 프로필도 함께 생략) -->
+        <section class="mb-5" th:if="${curationList == null or curationList.isEmpty()}">
+            <div class="bg-dark-section rounded p-4">
+                <h4 class="mb-1 text-white">🎟️ 박스오피스</h4>
+                <p class="text-light opacity-75 mb-3">지금 가장 많이 보는 작품이에요</p>
+
+                <div class="swiper boxOfficeSwiper position-relative"
+                     th:if="${boxOfficeList != null and !boxOfficeList.isEmpty()}">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide" th:each="movie, stat : ${boxOfficeList}">
+                            <a th:href="@{'/movies/detail/' + ${movie.movieCd}}" class="curation-card">
+                                <div class="curation-poster">
+                                    <img th:src="${movie.posterUrl}" onerror="this.src='/images/Logo.png'"
+                                         th:alt="${movie.title}" loading="lazy">
+                                    <span class="boxoffice-rank" th:text="${stat.count}">1</span>
+                                </div>
+                                <div class="curation-title" th:text="${movie.title}">제목</div>
+                                <div class="curation-genre" th:text="${movie.genre}">장르</div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="swiper-button-next curation-nav"></div>
+                    <div class="swiper-button-prev curation-nav"></div>
+                </div>
+
+                <div class="curation-empty" th:if="${boxOfficeList == null or boxOfficeList.isEmpty()}">
+                    <i class="bi bi-film"></i>
+                    <p class="mb-0">순위를 수집하는 중이에요. 잠시 후 다시 확인해주세요.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 섹션 3: 퀵 메뉴.
+             네 칸 중 셋이 회원 전용이라 sec:authorize 로 구역째 감춘다 -->
+        <section class="bg-white border rounded shadow-sm p-4 mb-5" sec:authorize="isAuthenticated()">
+            <div class="row g-3 text-center">
+                <div class="col-6 col-md-3">
+                    <a th:href="@{/movies}" class="quick-menu-item">
+                        <i class="bi bi-search"></i>
+                        <span class="quick-menu-title">영화 검색</span>
+                        <span class="quick-menu-desc">상영작 전체 보기</span>
+                    </a>
+                </div>
+                <!-- 예매 내역과 '최근 본 영화'를 한 칸으로 합쳤다 —
+                     예매를 중계만 하므로 본 영화를 알 수 있는 경로가 확정 예매뿐이다 -->
+                <div class="col-6 col-md-3">
+                    <a th:href="@{/members/reservations}" class="quick-menu-item">
+                        <i class="bi bi-ticket-perforated"></i>
+                        <span class="quick-menu-title">예매 내역</span>
+                        <span class="quick-menu-desc">최근 본 영화</span>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a th:href="@{/members/ratings}" class="quick-menu-item">
+                        <i class="bi bi-star"></i>
+                        <span class="quick-menu-title">나의 평점/리뷰</span>
+                        <span class="quick-menu-desc">관람한 영화 평가</span>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a th:href="@{/recommendations}" class="quick-menu-item">
+                        <i class="bi bi-sliders"></i>
+                        <span class="quick-menu-title">취향 및 장르 분석</span>
+                        <span class="quick-menu-desc">내 취향 직접 조정</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 섹션 4: 고객지원 (실제 게시판에서 가져옴) -->
+        <section class="row mb-5 border-top pt-4">
+
+            <div class="col-md-4 mb-4 mb-md-0 border-end pr-md-4">
+                <div class="d-flex justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0">공지사항</h6>
+                    <a th:href="@{/cs/notices}" class="text-decoration-none text-muted small">전체 보기 ></a>
+                </div>
+                <ul class="list-unstyled small mb-0">
+                    <li th:each="notice : ${noticePreview}" class="mb-2 text-truncate">
+                        <a th:href="@{/cs/notices/{id}(id=${notice.id})}"
+                           class="text-muted text-decoration-none hover-opacity">
+                            <span th:text="'[' + ${notice.category} + ']'">[안내]</span>
+                            <span th:text="${notice.title}">제목</span>
+                        </a>
+                    </li>
+                    <li th:if="${#lists.isEmpty(noticePreview)}" class="text-muted">
+                        등록된 공지사항이 없어요.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-md-4 mb-4 mb-md-0 border-end px-md-4">
+                <div class="d-flex justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0">FAQ 자주 묻는 질문</h6>
+                    <a th:href="@{/cs/faqs}" class="text-decoration-none text-muted small">전체 보기 ></a>
+                </div>
+                <ul class="list-unstyled small mb-0">
+                    <li th:each="faq : ${faqPreview}" class="mb-2 text-truncate">
+                        <a th:href="@{/cs/faqs}" class="text-muted text-decoration-none hover-opacity"
+                           th:text="${faq.question}">질문</a>
+                    </li>
+                    <li th:if="${#lists.isEmpty(faqPreview)}" class="text-muted">
+                        등록된 질문이 없어요.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-md-4 pl-md-4">
+                <h6 class="fw-bold mb-3">고객센터</h6>
+                <div class="text-muted small mb-2">1:1 문의<br>24시간 접수 가능</div>
+                <div class="fs-4 fw-bold text-dark mb-3">02-1234-5678</div>
+                <a th:href="@{/cs/inquiry}" class="btn btn-point btn-sm rounded-pill px-3">
+                    <i class="bi bi-chat-dots me-1"></i> 1:1 상담하기
+                </a>
+            </div>
+
+        </section>
+
+    </div>
+
+    <script defer th:src="@{/js/home.js}"></script>
+    <!-- 초기 설문 유도 팝업.
+         th:if 와 th:replace 를 같은 태그에 쓰면 조건이 조용히 무시되므로 th:block 으로 감쌀 것 -->
+    <th:block th:if="${showSurveyPrompt}">
+        <div th:replace="~{members/survey-popup :: surveyPopup(${isLoggedIn}, ${genreOptions}, ${moodOptions}, true)}"></div>
+        <script defer th:src="@{/js/survey-prompt.js}"></script>
+    </th:block>
+</main>
+</body>
+</html>

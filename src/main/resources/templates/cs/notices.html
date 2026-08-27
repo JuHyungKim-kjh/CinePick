@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>CinePick - 공지사항</title>
+</head>
+<body>
+<main class="container my-5">
+
+    <div th:replace="~{cs/tabs :: tabs(${activeTab})}"></div>
+
+    <!-- 등록·수정·삭제 뒤 알림 -->
+    <div th:if="${successMessage}" class="alert alert-success py-2 small" th:text="${successMessage}"></div>
+
+    <div class="d-flex justify-content-end mb-3" sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/cs/admin/notices/new}" class="btn btn-point btn-sm rounded-pill px-3">
+            <i class="bi bi-plus-lg me-1"></i> 공지 작성
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-0 overflow-hidden">
+
+        <!-- 초기 데이터 투입 전 화면이 빈 카드가 되지 않도록 -->
+        <div th:if="${notices.isEmpty()}" class="p-5 text-center text-muted">
+            <i class="bi bi-megaphone fs-1 d-block mb-3 opacity-50"></i>
+            아직 등록된 공지사항이 없어요.
+        </div>
+
+        <ul th:unless="${notices.isEmpty()}" class="list-unstyled mb-0">
+            <li th:each="notice : ${notices.content}" class="cs-notice-row">
+                <a th:href="@{/cs/notices/{id}(id=${notice.id})}" class="cs-notice-link">
+
+                    <!-- 말머리 배지. enum 이 아니라 문자열이라 아는 이름만 색을 주고 나머지는 기본색 -->
+                    <span class="cs-badge"
+                          th:classappend="${notice.category == '이벤트'} ? 'cs-badge-event'
+                                        : (${notice.category == '점검'} ? 'cs-badge-check' : 'cs-badge-info')"
+                          th:text="${notice.category}">안내</span>
+
+                    <span class="cs-notice-title">
+                        <i th:if="${notice.pinned}" class="bi bi-pin-angle-fill cs-pin" title="고정 공지"></i>
+                        <span th:text="${notice.title}">제목</span>
+                        <span th:if="${notice.fresh}" class="cs-new">NEW</span>
+                    </span>
+
+                    <span class="cs-notice-meta">
+                        <span th:text="${notice.createdAt}">2026.08.19</span>
+                        <span class="cs-dot">·</span>
+                        <i class="bi bi-eye"></i> <span th:text="${notice.viewCount}">0</span>
+                    </span>
+
+                </a>
+            </li>
+        </ul>
+
+    </div>
+
+    <!-- 총 1쪽이면 그리지 않는다 -->
+    <nav th:if="${notices.totalPages > 1}" class="mt-4 d-flex justify-content-center">
+        <ul class="pagination mb-0">
+            <li class="page-item" th:classappend="${notices.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/cs/notices(page=${currentPage - 1})}">이전</a>
+            </li>
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(1, notices.totalPages)}"
+                th:classappend="${i == currentPage} ? 'active'">
+                <a class="page-link" th:href="@{/cs/notices(page=${i})}" th:text="${i}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${notices.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/cs/notices(page=${currentPage + 1})}">다음</a>
+            </li>
+        </ul>
+    </nav>
+
+</main>
+</body>
+</html>

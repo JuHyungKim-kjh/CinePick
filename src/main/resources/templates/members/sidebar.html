@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="sidebar(active)" class="card border-0 shadow-sm rounded-4 p-3">
+    <div class="nav flex-column gap-1">
+        <a th:href="@{/members/me}" class="mypage-nav-link"
+           th:classappend="${active == 'home'} ? 'mypage-nav-link-active'">
+            <i class="bi bi-grid me-2"></i> 마이페이지 홈
+        </a>
+        <a th:href="@{/members/info}" class="mypage-nav-link"
+           th:classappend="${active == 'info'} ? 'mypage-nav-link-active'">
+            <i class="bi bi-person-vcard me-2"></i> 회원정보 조회
+        </a>
+        <a th:href="@{/members/reservations}" class="mypage-nav-link"
+           th:classappend="${active == 'reservations'} ? 'mypage-nav-link-active'">
+            <i class="bi bi-ticket-perforated me-2"></i> 예매/취소 내역
+        </a>
+        <a th:href="@{/members/ratings}" class="mypage-nav-link"
+           th:classappend="${active == 'ratings'} ? 'mypage-nav-link-active'">
+            <i class="bi bi-star me-2"></i> 나의 평점 및 리뷰
+        </a>
+        <a th:href="@{/recommendations}" class="mypage-nav-link"
+           th:classappend="${active == 'recommend'} ? 'mypage-nav-link-active'">
+            <i class="bi bi-sparkles me-2"></i> 취향 및 장르 분석
+        </a>
+    </div>
+</div>
+</body>
+</html>

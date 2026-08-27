@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko" th:fragment="layout(title, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/taste-analysis.css}">
+    <link rel="stylesheet" th:href="@{/css/curation.css}">
+    <link rel="stylesheet" th:href="@{/css/reservation.css}">
+    <link rel="stylesheet" th:href="@{/css/cs.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <title th:replace="${title}">Title</title>
+</head>
+<body>
+<nav th:replace="~{navbar :: navbar}"></nav>
+<main th:replace="${content}"></main>
+<footer th:replace="~{footer :: footer}"></footer>
+
+<!-- 예매 확인 팝업.
+     PendingReservationAdvice 가 미확인 예매를 모든 화면의 모델에 넣으므로 여기 한 번만 달면 된다.
+     미확인 건이 없어도 로그인 사용자면 숨겨진 껍데기를 깔아둔다(탭 복귀 시 스크립트가 채워 띄움).
+
+     th:if 와 th:replace 를 같은 태그에 쓰면 th:replace 가 먼저 실행돼 조건이 조용히 무시된다.
+     반드시 th:block 으로 감쌀 것 -->
+<th:block th:if="${reservationPopupEnabled}">
+    <div th:replace="~{members/reservation-popup :: reservationConfirm(${pendingReservation}, ${pendingReservationCount})}"></div>
+    <script defer th:src="@{/js/reservation-popup.js}"></script>
+</th:block>
+</body>
+</html>

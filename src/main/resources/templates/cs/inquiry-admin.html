@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>CinePick - 문의 답변</title>
+</head>
+<body>
+<main class="container my-5">
+
+    <div th:replace="~{cs/tabs :: tabs(${activeTab})}"></div>
+
+    <div th:if="${successMessage}" class="alert alert-success py-2 small" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger py-2 small" th:text="${errorMessage}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">문의 답변</h5>
+        <!-- 대기 건수 -->
+        <span class="cs-status" th:classappend="${waitingCount > 0} ? 'cs-status-wait' : 'cs-status-done'"
+              th:text="${waitingCount > 0} ? ${waitingCount} + '건 대기 중' : '모두 답변했어요'">0건 대기 중</span>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-0 overflow-hidden">
+
+        <div th:if="${#lists.isEmpty(inquiries)}" class="p-5 text-center text-muted">
+            <i class="bi bi-chat-dots fs-1 d-block mb-3 opacity-50"></i>
+            아직 들어온 문의가 없어요.
+        </div>
+
+        <!-- 문의 하나가 아코디언 한 칸. 저장에 실패한 건은 errorInquiryId 로 펼친 채 다시 그려진다 -->
+        <div th:each="inquiry : ${inquiries}" class="cs-faq-item"
+             th:classappend="${errorInquiryId != null and errorInquiryId == inquiry.id} ? 'is-open'">
+            <button type="button" class="cs-faq-question">
+                <span class="cs-faq-category" th:text="${inquiry.category}">분류</span>
+                <span class="cs-faq-text" th:text="${inquiry.title}">제목</span>
+                <span class="cs-inquiry-writer" th:text="${inquiry.writer}">작성자</span>
+                <span class="cs-status"
+                      th:classappend="${inquiry.answered} ? 'cs-status-done' : 'cs-status-wait'"
+                      th:text="${inquiry.statusLabel}">답변 대기</span>
+                <i class="bi bi-chevron-down cs-faq-arrow"></i>
+            </button>
+
+            <div class="cs-faq-answer">
+                <div class="text-muted small mb-2"
+                     th:text="${inquiry.writer} + ' · ' + ${inquiry.createdAt} + ' 접수'">작성자 · 접수일</div>
+                <div class="cs-content mb-3" th:text="${inquiry.content}">문의 내용</div>
+
+                <!-- 답변 폼. 이미 답변한 건이면 기존 답변이 채워진다 -->
+                <form th:action="@{/cs/admin/inquiries/{id}/answer(id=${inquiry.id})}" method="post">
+                    <label class="form-label small fw-semibold" th:for="'answer-' + ${inquiry.id}">
+                        답변
+                        <span th:if="${inquiry.answered}" class="text-muted fw-normal"
+                              th:text="'(' + ${inquiry.answeredAt} + ' 작성 · 고치면 날짜도 갱신됩니다)'"></span>
+                    </label>
+                    <textarea class="form-control mb-2" rows="5" name="answer"
+                              th:id="'answer-' + ${inquiry.id}"
+                              th:text="${inquiry.answer}"
+                              placeholder="회원에게 그대로 보이는 글입니다. 줄바꿈은 화면에 반영됩니다."></textarea>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-point btn-sm rounded-pill px-4"
+                                th:text="${inquiry.answered} ? '답변 수정' : '답변 등록'">답변 등록</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 접기/펴기는 FAQ 화면과 같은 구조(.cs-faq-item)라 스크립트를 그대로 쓴다 -->
+    <script defer th:src="@{/js/cs-faq.js}"></script>
+
+</main>
+</body>
+</html>

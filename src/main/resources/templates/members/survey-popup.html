@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="surveyPopup(isLoggedIn, genreOptions, moodOptions, autoShow)"
+     id="surveyPromptOverlay" class="survey-prompt-overlay" style="display:none;"
+     th:attr="data-logged-in=${isLoggedIn}, data-auto-show=${autoShow}">
+  <div class="survey-prompt-card" id="surveyPromptCard">
+    <button type="button" id="surveyPromptClose" class="survey-prompt-close" aria-label="닫기">
+      <i class="bi bi-x-lg"></i>
+    </button>
+
+    <!-- 화면 0: 웰컴 -->
+    <div id="promptScreenWelcome" class="survey-prompt-screen">
+      <div class="text-center mb-3">
+        <img th:src="@{/images/Logo.png}" alt="CinePick" class="survey-prompt-logo-img">
+      </div>
+      <h4 class="text-center fw-bold mb-2">
+        CinePick에 오신 걸<br>
+        <span class="text-point">환영합니다!</span>
+      </h4>
+      <p class="text-center text-muted small mb-4">
+        간단한 설문조사로 나만의 영화 취향을 알려주시면<br>
+        더 정확한 맞춤 추천을 받을 수 있어요.
+      </p>
+
+      <ul class="survey-prompt-list list-unstyled mb-4">
+        <li><span class="survey-prompt-check"><i class="bi bi-check-lg"></i></span> 나의 선호 장르와 분위기 분석</li>
+        <li><span class="survey-prompt-check"><i class="bi bi-check-lg"></i></span> 취향에 맞는 영화 추천</li>
+        <li><span class="survey-prompt-check"><i class="bi bi-check-lg"></i></span> 더 편리한 예매 경험</li>
+      </ul>
+
+      <a href="/login" class="btn btn-point w-100 fw-bold rounded-3 py-2 mb-2" th:if="${!isLoggedIn}">
+        로그인 후 사용하기
+      </a>
+      <button type="button" id="surveyStartBtn" class="btn btn-outline-dark w-100 fw-bold rounded-3 py-2">
+        설문조사 시작하기
+      </button>
+
+      <p class="text-center text-muted small mt-3 mb-0">
+        나중에 언제든지 마이페이지에서 참여할 수 있어요.
+      </p>
+    </div>
+
+    <!-- 화면 1: 장르 -->
+    <div id="promptScreenGenre" class="survey-prompt-screen d-none">
+      <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+        <span class="survey-step-dot survey-step-dot-active">1</span>
+        <span class="survey-step-line"></span>
+        <span class="survey-step-dot">2</span>
+      </div>
+      <h5 class="fw-bold text-center mb-1">선호하는 장르를 순서대로 골라주세요</h5>
+      <p class="text-muted small text-center mb-3">가장 좋아하는 순서대로 3개를 선택해주세요.</p>
+      <div class="d-flex flex-wrap gap-2 justify-content-center mb-4" id="promptGenreGrid">
+        <button type="button" class="survey-rank-btn" th:each="genre : ${genreOptions}"
+                th:text="${genre}" th:attr="data-value=${genre}">장르</button>
+      </div>
+      <button type="button" id="promptGenreNextBtn" class="btn btn-point w-100 fw-bold rounded-3 py-2" disabled>다음</button>
+    </div>
+
+    <!-- 화면 2: 분위기 -->
+    <div id="promptScreenMood" class="survey-prompt-screen d-none">
+      <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+        <span class="survey-step-dot">1</span>
+        <span class="survey-step-line"></span>
+        <span class="survey-step-dot survey-step-dot-active">2</span>
+      </div>
+      <h5 class="fw-bold text-center mb-1">선호하는 분위기를 순서대로 골라주세요</h5>
+      <p class="text-muted small text-center mb-3">가장 끌리는 순서대로 3개를 선택해주세요.</p>
+      <div class="d-flex flex-wrap gap-2 justify-content-center mb-4" id="promptMoodGrid">
+        <button type="button" class="survey-rank-btn" th:each="mood : ${moodOptions}"
+                th:text="${mood}" th:attr="data-value=${mood}">분위기</button>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" id="promptMoodPrevBtn" class="btn btn-outline-secondary rounded-3 py-2 px-4">이전</button>
+        <button type="button" id="promptSubmitBtn" class="btn btn-point flex-grow-1 fw-bold rounded-3 py-2" disabled>취향 분석 시작하기</button>
+      </div>
+      <div id="surveyPromptError" class="text-danger small mt-2" style="display:none;"></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

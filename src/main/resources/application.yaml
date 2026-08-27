@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: CinePick
+
+  # 기본값은 local. 배포 환경에서는 SPRING_PROFILES_ACTIVE=prod 로 덮어쓰고
+  # 아래 ${...} 값들을 전부 환경변수로 주입한다.
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  # 이 파일에는 실제 값이 없다. 로컬 값은 config/application-local.yaml(git 제외),
+  # 배포 값은 환경변수에서 온다. 비밀번호에 기본값을 주지 않은 것은 의도된 것으로,
+  # 값이 없으면 조용히 잘못된 곳에 붙는 대신 기동 자체가 실패한다.
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/CinePick?serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+
+api:
+  kobis:
+    key: ${KOBIS_API_KEY:}
+  tmdb:
+    key: ${TMDB_API_KEY:}
+
+  # Claude API 키. 비워두면 AI 분위기 분석은 동작하지 않고,
+  # 장르 조합 기반 분석(GenreBasedMoodTagger)으로 자동 대체된다.
+  claude:
+    key: ${CLAUDE_API_KEY:}
+    model: ${CLAUDE_MODEL:claude-opus-5}
+    # 서버 기동 후 미태깅 영화를 자동으로 분석할지 여부
+    auto-tag: ${CLAUDE_AUTO_TAG:true}
+    # 한 회차에 분석할 편수 (6시간마다 이만큼씩 처리)
+    batch-size: ${CLAUDE_BATCH_SIZE:20}

@@ -1,0 +1,323 @@
+/* 메인페이지 AI 맞춤형 큐레이션 / 취향 프로필 */
+
+/* 슬라이더 컨테이너 폭 고정.
+   flex 컨테이너 안에 들어가면 컨테이너 폭과 슬라이드 폭이 서로를 참조하며 매 프레임
+   증폭됨(실측 602,130px → 1,806,438px). 아래 규칙이 그 방어선 */
+.curationSwiper,
+.boxOfficeSwiper {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    /* 화살표(.curation-nav)가 -6px 로 바깥에 걸치므로, 그만큼 패딩을 주고 음수 마진으로
+       상쇄한다. 패딩이 없으면 overflow:hidden 에 화살표 왼쪽이 잘려나간다 */
+    padding: 0 10px;
+    margin: 0 -10px;
+    overflow: hidden;
+}
+
+/* 큐레이션 카드 */
+.curation-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+}
+
+.curation-poster {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    margin-bottom: 8px;
+}
+
+.curation-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.25s ease;
+}
+
+.curation-card:hover .curation-poster img {
+    transform: scale(1.05);
+}
+
+/* 취향 적합도 배지 */
+.curation-match {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--point-red);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 2px 9px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.curation-title {
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.curation-genre {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.75rem;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 박스오피스 순위 배지 */
+.boxoffice-rank {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 7px;
+    background: rgba(33, 37, 41, 0.85);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 어두운 배너 위 슬라이더 화살표 (전역 .swiper-button-* 에 덧씌움) */
+.curation-nav.swiper-button-next,
+.curation-nav.swiper-button-prev {
+    width: 34px !important;
+    height: 34px !important;
+    top: 38%;
+}
+
+.curation-nav.swiper-button-next::after,
+.curation-nav.swiper-button-prev::after {
+    font-size: 14px !important;
+}
+
+.curation-nav.swiper-button-prev { left: -6px !important; }
+.curation-nav.swiper-button-next { right: -6px !important; }
+
+/* 추천할 취향 정보가 없을 때 */
+.curation-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 1px dashed rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    padding: 32px 16px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.curation-empty i {
+    font-size: 2rem;
+    color: var(--point-red);
+    margin-bottom: 10px;
+}
+
+/* 나의 취향 프로필.
+   넣을 줄 수는 HomeController 의 PROFILE_*_SIZE 가 정함 — 크기를 바꾸면 그쪽도 함께 볼 것 */
+.profile-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.profile-info {
+    color: #adb5bd;
+    font-size: 0.95rem;
+    cursor: help;
+}
+
+.profile-section {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+}
+
+.profile-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.profile-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.profile-more {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #868e96;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.profile-more:hover {
+    color: var(--point-red);
+}
+
+.profile-pending {
+    display: inline-block;
+    background: #f1f3f5;
+    color: #868e96;
+    border-radius: 999px;
+    padding: 3px 11px;
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+/* 선호 장르 TOP 3 */
+.profile-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 7px;
+}
+
+.profile-bar:last-child {
+    margin-bottom: 0;
+}
+
+.profile-bar-track {
+    flex: 1;
+    min-width: 0;
+    height: 22px;
+    background: #f1f3f5;
+    border-radius: 999px;
+}
+
+/* 라벨이 채움 폭 안에 들어가므로, 글자 폭보다 좁아지지 않게 max-content 로 바닥을 깖 */
+.profile-bar-fill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-width: max-content;
+    max-width: 100%;
+    padding: 0 11px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.76rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.profile-bar-percent {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #495057;
+    width: 34px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* 최근 관람 & 평점 */
+.profile-watched {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 0;
+    text-decoration: none;
+    color: inherit;
+}
+
+.profile-watched:hover .profile-watched-title {
+    color: var(--point-red);
+}
+
+.profile-watched-poster {
+    width: 26px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: #f1f3f5;
+    flex-shrink: 0;
+}
+
+.profile-watched-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-watched-score {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--point-red);
+    flex-shrink: 0;
+}
+
+/* 평점 미입력 영화의 빈 별점 자리 */
+.profile-watched-score.is-unrated {
+    color: #adb5bd;
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
+/* 자주 선택하는 무드 */
+.profile-moods {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+}
+
+.profile-mood {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 2px;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+}
+
+.profile-mood-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 0.9rem;
+}
+
+.profile-mood-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #495057;
+    text-align: center;
+    line-height: 1.2;
+    /* 긴 이름이 칸을 밀어내지 않도록 줄바꿈 허용 */
+    word-break: keep-all;
+}

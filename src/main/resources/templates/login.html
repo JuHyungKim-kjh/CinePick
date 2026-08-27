@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>CinePick - 로그인</title>
+</head>
+<body>
+<main class="d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="card shadow-sm border-0" style="width: 100%; max-width: 400px;">
+        <div class="card-body p-5">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold">로그인</h3>
+                <p class="text-muted small">CinePick에 오신 것을 환영합니다.</p>
+            </div>
+
+            <!-- 로그인 폼 -->
+            <form action="/login" method="post">
+                <div class="mb-3">
+                    <label for="email" class="form-label small fw-bold">이메일</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="form-label small fw-bold">비밀번호</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+                </div>
+                <button type="submit" class="btn text-white w-100 fw-bold mb-3" style="background-color: var(--point-red);">
+                    로그인
+                </button>
+            </form>
+
+            <div class="text-center small">
+                <span class="text-muted">아직 회원이 아니신가요?</span>
+                <a th:href="@{/signup}" class="text-decoration-none fw-bold ms-1" style="color: var(--text-dark);">회원가입</a>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,113 @@
+/* 서버 준비 중 대기 화면(/loading) 전용.
+   layout.html 을 쓰지 않아 style.css 가 안 붙음 — 테마 변수를 여기서 다시 선언 */
+:root {
+    --bg-main: #F8F9FA;
+    --text-dark: #212529;
+    --point-red: #FA5252;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background-color: var(--text-dark);
+    color: #fff;
+    font-family: "Malgun Gothic", "맑은 고딕", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.loading-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    gap: 4px;
+}
+
+.loading-logo {
+    width: 132px;
+    max-width: 50vw;
+    margin-bottom: 28px;
+    padding: 10px 16px;
+    background: #fff;
+    border-radius: 14px;
+}
+
+/* 스피너 */
+.loading-spinner {
+    width: 42px;
+    height: 42px;
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    border-top-color: var(--point-red);
+    border-radius: 50%;
+    animation: loading-spin 0.9s linear infinite;
+    margin-bottom: 22px;
+}
+
+@keyframes loading-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 모션 최소화 설정에서는 회전 정지 */
+@media (prefers-reduced-motion: reduce) {
+    .loading-spinner { animation: none; }
+    .loading-bar { transition: none; }
+}
+
+/* 문구 */
+.loading-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 10px;
+    word-break: keep-all;
+}
+
+.loading-phase {
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 18px;
+    /* 문구 길이가 제각각이라 높이를 잡아둠 */
+    min-height: 1.3em;
+    word-break: keep-all;
+}
+
+.loading-hint {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 16px 0 0;
+    max-width: 360px;
+    line-height: 1.6;
+    word-break: keep-all;
+}
+
+.loading-elapsed {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.3);
+    margin: 8px 0 0;
+    min-height: 1.2em;
+}
+
+/* 연결 끊김·준비 실패 */
+.loading-hint.is-warning {
+    color: #FFD43B;
+}
+
+/* 진행률 막대 */
+.loading-track {
+    width: 260px;
+    max-width: 80vw;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+}
+
+.loading-bar {
+    width: 0;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--point-red);
+    transition: width 0.4s ease;
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!--
+  서버 준비 중 대기 화면.
+  layout.html 을 쓰지 않는다 — 공통 레이아웃이 참조하는 데이터가 아직 없을 때 뜨는 화면이라
+  얹으면 스스로 깨진다.
+-->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CinePick - 준비 중</title>
+    <link rel="stylesheet" th:href="@{/css/loading.css}">
+</head>
+<body>
+<!-- 준비가 끝나면 돌아갈 주소. 스크립트는 서버 값을 이 data 속성으로만 읽는다 -->
+<main class="loading-shell" th:attr="data-next=${next}">
+
+    <img class="loading-logo" th:src="@{/images/Logo.png}" alt="CinePick">
+
+    <div class="loading-spinner" aria-hidden="true"></div>
+
+    <h1 class="loading-title">영화 정보를 불러오는 중이에요</h1>
+
+    <p class="loading-phase" id="loadingPhase" aria-live="polite">서버를 시작하는 중이에요</p>
+
+    <div class="loading-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+        <div class="loading-bar" id="loadingBar"></div>
+    </div>
+
+    <p class="loading-hint" id="loadingHint">
+        준비가 끝나면 보시려던 화면으로 자동으로 이동해요.
+    </p>
+
+    <p class="loading-elapsed" id="loadingElapsed"></p>
+</main>
+
+<script defer th:src="@{/js/loading.js}"></script>
+</body>
+</html>

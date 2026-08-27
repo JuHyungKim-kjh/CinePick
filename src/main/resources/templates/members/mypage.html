@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>CinePick - 마이페이지</title>
+</head>
+<body>
+<main class="container my-5">
+
+    <h3 class="fw-bold mb-4">마이페이지</h3>
+
+    <!-- 사용자 인사 배너 -->
+    <div class="bg-dark-section rounded-4 p-4 mb-4 d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-white d-flex align-items-center justify-content-center flex-shrink-0"
+             style="width:56px; height:56px; font-size:1.4rem;">
+            <i class="bi bi-person-fill text-point"></i>
+        </div>
+        <div>
+            <div class="fw-bold fs-5 text-white" th:text="${member.nickname} + '님, 안녕하세요!'">닉네임님, 안녕하세요!</div>
+            <div class="text-white-50 small" th:text="${member.email}">email@example.com</div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{members/sidebar :: sidebar('home')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="row g-4">
+
+                <!-- 1. 회원정보 조회 -->
+                <div class="col-md-6">
+                    <a th:href="@{/members/info}" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-opacity">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width:48px; height:48px; background: rgba(250,82,82,0.1);">
+                                    <i class="bi bi-person-vcard fs-4 text-point"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0 text-dark">회원정보 조회</h5>
+                            </div>
+                            <p class="text-muted small mb-0">닉네임, 이메일 등 내 정보를 확인하고 수정해요.</p>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- 2. 취향 및 장르 분석 -->
+                <div class="col-md-6">
+                    <a th:href="@{/recommendations}" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-opacity">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width:48px; height:48px; background: rgba(250,82,82,0.1);">
+                                    <i class="bi bi-sparkles fs-4 text-point"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0 text-dark">취향 및 장르 분석</h5>
+                            </div>
+                            <p class="text-muted small mb-0">AI가 분석한 나의 영화 취향을 확인해요.</p>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- 3. 예매/취소 내역 관리 -->
+                <div class="col-md-6">
+                    <a th:href="@{/members/reservations}" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-opacity">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width:48px; height:48px; background: rgba(250,82,82,0.1);">
+                                    <i class="bi bi-ticket-perforated fs-4 text-point"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0 text-dark">예매/취소 내역 관리</h5>
+                            </div>
+                            <p class="text-muted small mb-0">예매하거나 취소한 영화 내역을 확인해요.</p>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- 4. 나의 평점 및 리뷰 -->
+                <div class="col-md-6">
+                    <a th:href="@{/members/ratings}" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-opacity">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width:48px; height:48px; background: rgba(250,82,82,0.1);">
+                                    <i class="bi bi-star fs-4 text-point"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0 text-dark">나의 평점 및 리뷰</h5>
+                            </div>
+                            <p class="text-muted small mb-0">내가 남긴 평점과 리뷰를 모아봐요.</p>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
