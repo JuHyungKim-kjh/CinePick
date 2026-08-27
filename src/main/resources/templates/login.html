@@ -13,6 +13,17 @@
                 <p class="text-muted small">CinePick에 오신 것을 환영합니다.</p>
             </div>
 
+            <!-- 가입 직후 넘어온 경우. 성공했는데 아무 말이 없으면 됐는지 알 수 없다 -->
+            <div th:if="${param.joined}" class="alert alert-success py-2 small">
+                가입이 완료됐어요. 방금 만든 계정으로 로그인해 주세요.
+            </div>
+
+            <!-- 스프링 시큐리티가 실패 시 ?error 를 붙여 되돌려 보낸다.
+                 어느 쪽이 틀렸는지는 알려주지 않는다 — 존재하는 이메일인지 알려주는 셈이 되기 때문 -->
+            <div th:if="${param.error}" class="alert alert-danger py-2 small">
+                이메일 또는 비밀번호가 올바르지 않아요.
+            </div>
+
             <!-- 로그인 폼 -->
             <form action="/login" method="post">
                 <div class="mb-3">
