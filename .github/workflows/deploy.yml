@@ -1,0 +1,109 @@
+# main 에 push 하면 이미지를 만들어 EC2 에 배포한다.
+#
+# 필요한 Secrets (저장소 Settings → Secrets and variables → Actions):
+#   DOCKERHUB_USERNAME  Docker Hub 아이디
+#   DOCKERHUB_TOKEN     Docker Hub 액세스 토큰 (계정 비밀번호가 아니다)
+#   EC2_HOST            EC2 퍼블릭 IP
+#   EC2_SSH_KEY         cinepick-key.pem 파일 내용 전체
+
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+  # Actions 탭에서 손으로 돌릴 수 있게 열어둔다. 코드 변경 없이 재배포할 때 쓴다.
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 소스 내려받기
+        uses: actions/checkout@v4
+
+      # 컴파일만 먼저 해본다. 오타 하나로 실패할 때 Docker 빌드 로그 깊숙이 묻히는 대신
+      # 여기서 2분 일찍, 읽을 수 있는 메시지로 멈추게 하려는 것이다.
+      - name: JDK 17 준비
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: 컴파일 확인
+        run: |
+          chmod +x gradlew
+          ./gradlew compileJava --no-daemon
+
+      - name: Docker Hub 로그인
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Buildx 준비
+        uses: docker/setup-buildx-action@v3
+
+      # 태그를 둘 붙인다.
+      #   latest  - EC2 가 내려받을 때 쓰는 이름
+      #   커밋 해시 - 문제가 생겼을 때 되돌아갈 지점. latest 만 쓰면 어느 코드였는지 알 수 없다.
+      - name: 이미지 빌드·푸시
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/cinepick:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/cinepick:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: EC2 에 배포
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/cinepick:latest
+
+            docker pull $IMAGE
+
+            # 첫 배포에는 지울 컨테이너가 없으므로 실패를 무시한다
+            docker stop cinepick 2>/dev/null || true
+            docker rm cinepick 2>/dev/null || true
+
+            docker run -d \
+              --name cinepick \
+              --restart unless-stopped \
+              --network host \
+              --log-opt max-size=10m --log-opt max-file=3 \
+              --env-file ~/cinepick.env \
+              $IMAGE
+
+            # 배포를 반복하면 옛 이미지가 쌓여 30GB 를 금방 채운다
+            docker image prune -f
+
+      # 컨테이너가 떴다고 서비스가 되는 것은 아니다. 실제로 응답하는지 확인한다.
+      - name: 기동 확인
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            for i in $(seq 1 30); do
+              if curl -sf http://127.0.0.1:8080/system/status | grep -q '"ready":true'; then
+                echo "배포 성공"
+                curl -s http://127.0.0.1:8080/system/status
+                exit 0
+              fi
+              sleep 5
+            done
+            echo "150초 안에 준비되지 않음. 로그를 확인한다:"
+            docker logs --tail 50 cinepick
+            exit 1
