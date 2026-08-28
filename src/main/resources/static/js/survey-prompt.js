@@ -19,15 +19,24 @@
         overlay.style.display = 'flex';
     }
 
+    // 닫기(X)와 '게스트로 사용하기'가 같은 동작이다. 팝업만 걷고 메인을 그대로 보여준다
+    function dismissPopup() {
+        overlay.style.display = 'none';
+        // 로그인 사용자는 건너뛰기 이력을 회원 정보에 남긴다 (게스트는 서버가 세션에 표시)
+        if (isLoggedIn) {
+            fetch('/survey/dismiss', { method: 'POST' }).catch(() => {});
+        }
+    }
+
     const closeBtn = document.getElementById('surveyPromptClose');
     if (closeBtn) {
-        closeBtn.addEventListener('click', function () {
-            overlay.style.display = 'none';
-            // 로그인 사용자는 건너뛰기 이력을 회원 정보에 남긴다 (게스트는 서버가 세션에 표시)
-            if (isLoggedIn) {
-                fetch('/survey/dismiss', { method: 'POST' }).catch(() => {});
-            }
-        });
+        closeBtn.addEventListener('click', dismissPopup);
+    }
+
+    // 게스트에게만 렌더된다 (survey-popup.html)
+    const guestBtn = document.getElementById('surveyGuestBtn');
+    if (guestBtn) {
+        guestBtn.addEventListener('click', dismissPopup);
     }
 
     const screenWelcome = document.getElementById('promptScreenWelcome');

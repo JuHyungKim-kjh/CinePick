@@ -18,9 +18,13 @@
         CinePick에 오신 걸<br>
         <span class="text-point">환영합니다!</span>
       </h4>
-      <p class="text-center text-muted small mb-4">
+      <p class="text-center text-muted small mb-4" th:if="${isLoggedIn}">
         간단한 설문조사로 나만의 영화 취향을 알려주시면<br>
         더 정확한 맞춤 추천을 받을 수 있어요.
+      </p>
+      <p class="text-center text-muted small mb-4" th:unless="${isLoggedIn}">
+        로그인하시면 취향 설문과 AI 분석으로<br>
+        나에게 맞는 영화를 추천받을 수 있어요.
       </p>
 
       <ul class="survey-prompt-list list-unstyled mb-4">
@@ -29,15 +33,26 @@
         <li><span class="survey-prompt-check"><i class="bi bi-check-lg"></i></span> 더 편리한 예매 경험</li>
       </ul>
 
-      <a href="/login" class="btn btn-point w-100 fw-bold rounded-3 py-2 mb-2" th:if="${!isLoggedIn}">
+      <!-- 게스트에게는 설문 버튼을 주지 않는다. 설문 결과를 쓰는 취향 분석·AI 추천이
+           로그인 회원 전용이라, 설문을 받아도 돌려줄 화면이 없다.
+           대신 닫기(X)와 같은 동작을 하는 버튼을 둔다 -->
+      <a href="/login" class="btn btn-point w-100 fw-bold rounded-3 py-2 mb-2" th:unless="${isLoggedIn}">
         로그인 후 사용하기
       </a>
-      <button type="button" id="surveyStartBtn" class="btn btn-outline-dark w-100 fw-bold rounded-3 py-2">
+      <button type="button" id="surveyGuestBtn" class="btn btn-outline-dark w-100 fw-bold rounded-3 py-2"
+              th:unless="${isLoggedIn}">
+        게스트로 사용하기
+      </button>
+      <button type="button" id="surveyStartBtn" class="btn btn-point w-100 fw-bold rounded-3 py-2"
+              th:if="${isLoggedIn}">
         설문조사 시작하기
       </button>
 
-      <p class="text-center text-muted small mt-3 mb-0">
+      <p class="text-center text-muted small mt-3 mb-0" th:if="${isLoggedIn}">
         나중에 언제든지 마이페이지에서 참여할 수 있어요.
+      </p>
+      <p class="text-center text-muted small mt-3 mb-0" th:unless="${isLoggedIn}">
+        로그인하지 않아도 영화 정보와 예매 링크는 그대로 이용할 수 있어요.
       </p>
     </div>
 
