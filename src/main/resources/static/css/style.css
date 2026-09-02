@@ -61,15 +61,21 @@ body {
     font-weight: 900;
 }
 
-/* 버튼이 포스터 바깥쪽에 살짝 걸치도록 위치 조정 */
+/* 슬라이더와 화살표를 함께 담는 껍데기.
+   화살표를 .swiper 안에 두면 overflow:hidden 이 패딩 박스에서 잘라내, 바깥에 걸치라고 준
+   음수 offset 만큼이 그대로 잘려나간다(상단 48px 중 15px, 큐레이션 34px 중 6px 실측).
+   패딩으로는 못 막는다 — 화살표의 left 도 같은 패딩 박스 기준이라 둘이 함께 움직인다.
+   그래서 화살표를 슬라이더 밖으로 빼고, 이 껍데기를 기준으로 위치를 잡는다 */
+.swiper-shell { position: relative; }
+
+/* 버튼이 포스터 바깥쪽에 살짝 걸치도록 위치 조정 (기준은 .swiper-shell) */
 .swiper-button-prev { left: -15px !important; }
 .swiper-button-next { right: -15px !important; }
 
-/* 화살표가 잘리지 않도록, 확대된 포스터가 아래 섹션과 겹치지 않도록 패딩 여백 추가.
-   상하 55px 은 가운데 포스터 확대(scale 1.12)가 밖으로 새지 않을 여유분.
+/* 상하 55px 은 가운데 포스터 확대(scale 1.12)가 밖으로 새지 않을 여유분.
    overflow:hidden 을 직접 못박아 둔다 — Swiper 기본값에 기대지 않고 이 컨테이너 밖으로는
    절대 못 나가게 한다 */
-.movieSwiper { padding: 55px 20px !important; margin: 0 -20px; overflow: hidden; }
+.movieSwiper { padding: 55px 20px !important; overflow: hidden; }
 
 /* 무비차트 - 가운데 포스터 확대 + 번호 배지 강조 (Swiper 가 붙이는 swiper-slide-active 로 판단) */
 .movie-badge {

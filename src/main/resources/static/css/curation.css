@@ -11,14 +11,11 @@
     overflow: hidden;
 }
 
-/* 아래 padding/margin 보정은 지금 동작하지 않는다. 두 가지 이유가 겹쳐 있다.
-     1) layout.html 에서 Swiper CSS 가 이 파일보다 뒤에 로드되는데 그쪽 .swiper 에
-        padding:0 / margin:auto 가 있다. 클래스 하나로는 명시도가 같아 순서에서 밀린다
-        (style.css 의 .movieSwiper 가 !important 를 쓰는 이유가 이것이다)
-     2) 명시도를 올려 되살려도 잘림은 그대로다 — overflow:hidden 은 패딩 박스에서 자르고
-        화살표의 left:-6px 도 같은 패딩 박스 기준이라, 둘이 함께 움직여 잘리는 6px 이 변하지 않는다
-   화살표를 온전히 보이게 하려면 .curation-nav 의 left/right 를 0 이상으로 옮기거나
-   화살표를 슬라이더 밖으로 빼야 한다. 지금은 잘린 채로 두고 있다 */
+/* 화살표(.curation-nav)는 이 슬라이더 안이 아니라 .swiper-shell 안에 둔다 —
+   overflow:hidden 이 패딩 박스에서 잘라내기 때문이다 (style.css 의 .swiper-shell 참조).
+   예전에는 여기에 padding/margin 보정을 두었는데 두 가지 이유로 무용지물이었다:
+   Swiper CSS 가 뒤에 로드돼 명시도에서 밀렸고, 되살려도 화살표의 left 가 같은 패딩 박스
+   기준이라 잘리는 양이 그대로였다 */
 
 /* 큐레이션 탭 (지금 상영 중 / 전체 작품) */
 .curation-tabs {

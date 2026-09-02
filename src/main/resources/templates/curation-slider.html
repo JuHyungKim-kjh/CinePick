@@ -7,19 +7,22 @@
   class 는 반드시 curationSwiper 를 유지하고 구분은 id 로만 한다 —
   curation.css 의 .curationSwiper 규칙에 화살표가 잘리지 않게 하는 패딩 보정이 들어 있다.
 -->
-<div th:fragment="slider(sliderId, items)"
-     class="swiper curationSwiper position-relative" th:id="${sliderId}">
-    <div class="swiper-wrapper">
-        <div class="swiper-slide" th:each="item : ${items}">
-            <a th:href="@{'/movies/detail/' + ${item.movieCd}}" class="curation-card">
-                <div class="curation-poster">
-                    <img th:src="${item.posterUrl}" onerror="this.src='/images/Logo.png'"
-                         th:alt="${item.title}" loading="lazy">
-                    <span class="curation-match" th:text="${item.matchPercent} + '%'">0%</span>
-                </div>
-                <div class="curation-title" th:text="${item.title}">제목</div>
-                <div class="curation-genre" th:text="${item.genre}">장르</div>
-            </a>
+<!-- 화살표는 .swiper 밖(shell 안)에 둔다.
+     안에 두면 overflow:hidden 이 패딩 박스에서 잘라내 바깥에 걸친 6px 이 사라진다 -->
+<div th:fragment="slider(sliderId, items)" class="swiper-shell" th:id="'shell-' + ${sliderId}">
+    <div class="swiper curationSwiper" th:id="${sliderId}">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide" th:each="item : ${items}">
+                <a th:href="@{'/movies/detail/' + ${item.movieCd}}" class="curation-card">
+                    <div class="curation-poster">
+                        <img th:src="${item.posterUrl}" onerror="this.src='/images/Logo.png'"
+                             th:alt="${item.title}" loading="lazy">
+                        <span class="curation-match" th:text="${item.matchPercent} + '%'">0%</span>
+                    </div>
+                    <div class="curation-title" th:text="${item.title}">제목</div>
+                    <div class="curation-genre" th:text="${item.genre}">장르</div>
+                </a>
+            </div>
         </div>
     </div>
     <div class="swiper-button-next curation-nav"></div>
