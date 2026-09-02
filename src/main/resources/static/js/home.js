@@ -29,9 +29,10 @@
             grabCursor: true,
             centeredSlides: true,
             loop: slideCount > 10,
+            // 화살표는 슬라이더 밖(#shellMovie 안)에 있다 — 안에 두면 잘린다
             navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
+                nextEl: '#shellMovie .swiper-button-next',
+                prevEl: '#shellMovie .swiper-button-prev',
             },
             breakpoints: {
                 // 가운데 포스터가 있어야 하므로 홀수 개수만 쓴다 (짝수면 정중앙이 없다)
@@ -46,17 +47,18 @@
 
     /** AI 큐레이션 / 박스오피스는 좁은 칸에 들어가므로 노출 개수를 따로 잡는다. */
     function initSideSwipers() {
-        ['#curationNow', '#curationAll', '.boxOfficeSwiper'].forEach(function (selector) {
-            var el = document.querySelector(selector);
+        // 화살표가 .swiper 밖에 있으므로 껍데기(shell)를 기준으로 찾는다
+        ['#shell-curationNow', '#shell-curationAll', '#shellBoxOffice'].forEach(function (shell) {
+            var el = document.querySelector(shell + ' .swiper');
             if (!el) return;
 
-            sideSwipers[el.id] = new Swiper(selector, {
+            sideSwipers[el.id] = new Swiper(el, {
                 slidesPerView: 2,
                 spaceBetween: 12,
                 grabCursor: true,
                 navigation: {
-                    nextEl: selector + ' .swiper-button-next',
-                    prevEl: selector + ' .swiper-button-prev',
+                    nextEl: shell + ' .swiper-button-next',
+                    prevEl: shell + ' .swiper-button-prev',
                 },
                 breakpoints: {
                     768: { slidesPerView: 3, spaceBetween: 14 },
