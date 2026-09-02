@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  AI 큐레이션 슬라이더 한 벌. 「지금 상영 중」·「전체 작품」 두 탭이 같은 모양이라 한 곳에 둔다.
+
+  class 는 반드시 curationSwiper 를 유지하고 구분은 id 로만 한다 —
+  curation.css 의 .curationSwiper 규칙에 화살표가 잘리지 않게 하는 패딩 보정이 들어 있다.
+-->
+<div th:fragment="slider(sliderId, items)"
+     class="swiper curationSwiper position-relative" th:id="${sliderId}">
+    <div class="swiper-wrapper">
+        <div class="swiper-slide" th:each="item : ${items}">
+            <a th:href="@{'/movies/detail/' + ${item.movieCd}}" class="curation-card">
+                <div class="curation-poster">
+                    <img th:src="${item.posterUrl}" onerror="this.src='/images/Logo.png'"
+                         th:alt="${item.title}" loading="lazy">
+                    <span class="curation-match" th:text="${item.matchPercent} + '%'">0%</span>
+                </div>
+                <div class="curation-title" th:text="${item.title}">제목</div>
+                <div class="curation-genre" th:text="${item.genre}">장르</div>
+            </a>
+        </div>
+    </div>
+    <div class="swiper-button-next curation-nav"></div>
+    <div class="swiper-button-prev curation-nav"></div>
+</div>
+</body>
+</html>

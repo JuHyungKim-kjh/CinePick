@@ -8,11 +8,59 @@
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    /* 화살표(.curation-nav)가 -6px 로 바깥에 걸치므로, 그만큼 패딩을 주고 음수 마진으로
-       상쇄한다. 패딩이 없으면 overflow:hidden 에 화살표 왼쪽이 잘려나간다 */
-    padding: 0 10px;
-    margin: 0 -10px;
     overflow: hidden;
+}
+
+/* 아래 padding/margin 보정은 지금 동작하지 않는다. 두 가지 이유가 겹쳐 있다.
+     1) layout.html 에서 Swiper CSS 가 이 파일보다 뒤에 로드되는데 그쪽 .swiper 에
+        padding:0 / margin:auto 가 있다. 클래스 하나로는 명시도가 같아 순서에서 밀린다
+        (style.css 의 .movieSwiper 가 !important 를 쓰는 이유가 이것이다)
+     2) 명시도를 올려 되살려도 잘림은 그대로다 — overflow:hidden 은 패딩 박스에서 자르고
+        화살표의 left:-6px 도 같은 패딩 박스 기준이라, 둘이 함께 움직여 잘리는 6px 이 변하지 않는다
+   화살표를 온전히 보이게 하려면 .curation-nav 의 left/right 를 0 이상으로 옮기거나
+   화살표를 슬라이더 밖으로 빼야 한다. 지금은 잘린 채로 두고 있다 */
+
+/* 큐레이션 탭 (지금 상영 중 / 전체 작품) */
+.curation-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.curation-tab {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.75);
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.curation-tab:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.curation-tab.is-active {
+    background-color: var(--point-red);
+    border-color: var(--point-red);
+    color: #fff;
+}
+
+/* 빈 상영작 안내에서 전체 작품 탭으로 넘어가는 버튼.
+   같은 화면 안에서 탭만 바꾸는 동작이라 링크가 아니라 버튼이다 */
+.curation-empty-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--point-red);
+    font-weight: 700;
+}
+
+.curation-empty-link:hover {
+    text-decoration: underline;
 }
 
 /* 큐레이션 카드 */

@@ -331,6 +331,29 @@ public class MovieService {
         return resultList;
     }
 
+    /**
+     * 4-2. [추천 후보 거르개] 지금 상영 중인 영화의 movieCd 집합.
+     *
+     * {@link #getMoviesForMainPage} 와 달리 TMDB 를 부르지도, 새 영화를 저장하지도 않는 읽기 전용이다 —
+     * 이 값은 이미 채점한 영화를 거르는 데만 쓰므로, 아직 DB 에 없는 영화는 어차피 점수가 없어
+     * 후보에서 빠져도 잃는 것이 없다.
+     *
+     * 주의: 크롤링 캐시를 읽으므로 준비 전에 부르면 빈 집합이 나온다.
+     * 이 값을 쓰는 화면은 WebConfig 의 시작 게이트 대상이어야 한다 (메인 `/` 은 이미 포함).
+     */
+    public Set<String> getNowShowingMovieCds() {
+        Set<String> crawledTitles = movieCrawlerScheduler.getCachedResult().nowShowing.stream()
+                .map(movieCrawlerService::cleanTitle)
+                .collect(Collectors.toSet());
+        if (crawledTitles.isEmpty()) return Set.of();
+
+        // 제목마다 전체 영화를 뒤지는 대신 한 번만 훑는다
+        return movieRepository.findAll().stream()
+                .filter(movie -> crawledTitles.contains(movieCrawlerService.cleanTitle(movie.getTitle())))
+                .map(Movie::getMovieCd)
+                .collect(Collectors.toSet());
+    }
+
     // 4-1. 크롤링으로 수집한 사이트별 링크를 Movie 엔티티에 반영
     private void updateSiteLinks(Movie movie, List<MovieCrawlerService.SiteLink> links) {
         if (links == null) return;

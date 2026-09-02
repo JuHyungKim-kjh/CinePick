@@ -1,5 +1,6 @@
 /**
- * 메인페이지(/) 전용. Swiper 3개(무비차트, AI 큐레이션, 박스오피스) 초기화.
+ * 메인페이지(/) 전용.
+ * Swiper 초기화(무비차트, AI 큐레이션 2벌, 박스오피스)와 큐레이션 탭 전환을 맡는다.
  */
 (function () {
     'use strict';
@@ -7,6 +8,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         initMovieSwiper();
         initSideSwipers();
+        initCurationTabs();
     });
 
     /**
@@ -39,11 +41,16 @@
         });
     }
 
+    /** 탭 전환 때 update() 를 불러야 하므로 만든 인스턴스를 id 로 들고 있는다. */
+    var sideSwipers = {};
+
     /** AI 큐레이션 / 박스오피스는 좁은 칸에 들어가므로 노출 개수를 따로 잡는다. */
     function initSideSwipers() {
-        ['.curationSwiper', '.boxOfficeSwiper'].forEach(function (selector) {
-            if (!document.querySelector(selector)) return;
-            new Swiper(selector, {
+        ['#curationNow', '#curationAll', '.boxOfficeSwiper'].forEach(function (selector) {
+            var el = document.querySelector(selector);
+            if (!el) return;
+
+            sideSwipers[el.id] = new Swiper(selector, {
                 slidesPerView: 2,
                 spaceBetween: 12,
                 grabCursor: true,
@@ -58,5 +65,34 @@
                 }
             });
         });
+    }
+
+    /**
+     * AI 큐레이션 탭. 두 목록을 이미 다 내려받았으므로 서버를 다시 다녀오지 않는다.
+     * 탭 버튼과 빈 안내의 '전체 작품 추천 보기' 가 같은 data 속성을 쓴다.
+     */
+    function initCurationTabs() {
+        var buttons = document.querySelectorAll('[data-curation-target]');
+        if (!buttons.length) return;
+
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                activate(btn.dataset.curationTarget);
+            });
+        });
+    }
+
+    function activate(targetId) {
+        document.querySelectorAll('.curation-pane').forEach(function (pane) {
+            pane.classList.toggle('d-none', pane.id !== 'pane-' + targetId);
+        });
+        document.querySelectorAll('.curation-tab').forEach(function (tab) {
+            tab.classList.toggle('is-active', tab.dataset.curationTarget === targetId);
+        });
+
+        // 숨어 있는 동안 만들어진 Swiper 는 폭을 0 으로 재서 슬라이드가 겹쳐 보인다.
+        // 화면에 나온 뒤 한 번 다시 재게 한다
+        var swiper = sideSwipers[targetId];
+        if (swiper) swiper.update();
     }
 })();
