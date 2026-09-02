@@ -111,10 +111,15 @@ public class HomeController {
         if (isLoggedIn) {
             Member member = memberRepository.findByEmail(authentication.getName()).orElse(null);
             if (member != null) {
-                curationList = recommendService.curateForMain(member, CURATION_SIZE);
+                RecommendService.MainCuration curation = recommendService.curateForMain(
+                        member, CURATION_SIZE, movieService.getNowShowingMovieCds());
+                curationList = curation.all();
 
                 if (!curationList.isEmpty()) {
                     model.addAttribute("curationList", curationList);
+                    // 비어 있을 수 있다 (크롤링 준비 전이거나 상영작이 취향과 겹치지 않을 때).
+                    // 그래도 속성은 넣는다 — 템플릿의 #lists.isEmpty(null) 은 예외를 낸다
+                    model.addAttribute("nowShowingCurationList", curation.nowShowing());
                     addTasteProfile(member, model);
                 }
             }

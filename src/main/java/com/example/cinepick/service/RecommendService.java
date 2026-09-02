@@ -35,19 +35,31 @@ public class RecommendService {
     /** 분위기가 이 값 이상이면 그 영화의 "두드러지는 분위기"로 본다 (기준은 MoodTagger) */
     private static final int MOOD_PRESENCE_THRESHOLD = MoodTagger.PRESENCE_THRESHOLD;
 
+    /** 메인페이지 큐레이션 두 벌. 화면 DTO 가 아니라 서비스 반환값이라 dto/response 에 두지 않는다 */
+    public record MainCuration(List<AiRecommendResDto> all, List<AiRecommendResDto> nowShowing) {
+        static MainCuration empty() {
+            return new MainCuration(List.of(), List.of());
+        }
+    }
+
     /**
-     * 메인페이지 큐레이션 목록. 설문 전 회원이면 빈 목록을 돌려준다
+     * 메인페이지 큐레이션. 전체 작품과 지금 상영 중인 작품, 두 벌을 함께 돌려준다.
+     * 설문 전 회원이면 두 목록 모두 비워 돌려준다
      * (가짜 추천을 만들지 않고 화면에서 설문 유도 문구를 띄운다).
+     *
+     * 채점은 <b>한 번만</b> 한다 — 목록을 따로 만들면 전체 영화 순회와 분위기 태깅이 통째로 두 번 돈다.
+     *
+     * @param nowShowingMovieCds 지금 상영 중인 영화의 movieCd ({@link MovieService#getNowShowingMovieCds})
      */
     @Transactional(readOnly = true)
-    public List<AiRecommendResDto> curateForMain(Member member, int limit) {
+    public MainCuration curateForMain(Member member, int limit, Set<String> nowShowingMovieCds) {
         Optional<PreferenceSurvey> surveyOpt = preferenceService.findSurvey(member);
-        if (surveyOpt.isEmpty()) return List.of();
+        if (surveyOpt.isEmpty()) return MainCuration.empty();
         PreferenceSurvey survey = surveyOpt.get();
 
         Map<String, Integer> genrePref = preferenceService.genreScores(member, SurveyController.GENRE_OPTIONS);
         Map<String, Integer> moodPref = preferenceService.moodScores(member, SurveyController.MOOD_OPTIONS);
-        if (genrePref.isEmpty() && moodPref.isEmpty()) return List.of();
+        if (genrePref.isEmpty() && moodPref.isEmpty()) return MainCuration.empty();
 
         // 분위기 슬라이더가 높을수록 분위기 적합도의 비중이 커진다 (0.5 ~ 1.5)
         double moodWeight = 0.5 + survey.getMoodIntensity() / 100.0;
@@ -58,13 +70,30 @@ public class RecommendService {
             // 취향과 접점이 없는 영화(0점)와, 기피 쪽이 더 커서 합계가 음수인 영화를 함께 걸러낸다
             if (s.total > 0) scored.add(s);
         }
-        if (scored.isEmpty()) return List.of();
+        if (scored.isEmpty()) return MainCuration.empty();
 
         scored.sort(Comparator.comparingDouble((Scored s) -> s.total).reversed());
 
-        List<Scored> picked = pick(scored, limit, survey.getGenreDiversity());
+        /*
+         * 두 목록 모두 전체 최고점으로 나눈다.
+         *
+         * 상영작 목록만 따로 정규화하면 후보가 적을 때 평범한 영화가 100% 로 표시된다.
+         * 같은 기준을 써야 두 탭의 숫자가 서로 비교 가능하고, 상영작 탭의 최고값이
+         * 100% 에 못 미치는 것이 사실에 가깝다.
+         */
         double topScore = scored.get(0).total;
+        int diversity = survey.getGenreDiversity();
 
+        List<Scored> nowShowing = scored.stream()
+                .filter(s -> nowShowingMovieCds.contains(s.movie.getMovieCd()))
+                .toList();
+
+        return new MainCuration(
+                toDtos(pick(scored, limit, diversity), topScore),
+                toDtos(pick(nowShowing, limit, diversity), topScore));
+    }
+
+    private List<AiRecommendResDto> toDtos(List<Scored> picked, double topScore) {
         List<AiRecommendResDto> result = new ArrayList<>();
         for (Scored s : picked) {
             result.add(toDto(s, topScore));
