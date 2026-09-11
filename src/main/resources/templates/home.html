@@ -47,12 +47,10 @@
 
                                 <div class="card-body p-3">
                                     <h6 class="fw-bold text-truncate mb-1" th:text="${movie.title}">영화 제목</h6>
-                                    <p class="small text-muted mb-2 text-truncate" th:text="${movie.genre}">장르</p>
-
-                                    <div class="d-flex align-items-center mb-3 small fw-bold">
-                                        <span class="me-2" style="color: var(--point-red);"><i class="bi bi-star-fill"></i> 0.0</span>
-                                        <span class="text-muted" th:text="${currentTab == 'now'} ? '예매율 -%' : '개봉예정'">예매율 -%</span>
-                                    </div>
+                                    <!-- 평점·예매율은 넣지 않는다. CinePick 은 예매를 중계만 하므로 예매율을 알 수 없고,
+                                         평점도 회원 개인이 남긴 값뿐이라 카드에 올릴 대표 평점이 없다.
+                                         고정값(0.0 / -%)을 그대로 두면 실제 수치처럼 보인다 -->
+                                    <p class="small text-muted mb-3 text-truncate" th:text="${movie.genre}">장르</p>
 
                                     <a th:href="@{/movies/detail/{id}(id=${movie.movieCd})}" class="btn w-100 fw-bold bg-white rounded-3" style="border: 1px solid var(--point-red); color: var(--point-red);">예매하기</a>
                                 </div>
