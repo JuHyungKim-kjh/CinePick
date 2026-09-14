@@ -21,6 +21,7 @@ public class StartupWarmupService {
     private final MovieService movieService;
     private final MovieCrawlerScheduler movieCrawlerScheduler;
     private final CsService csService;
+    private final MainPageCatalog mainPageCatalog;
 
     /** 준비 완료 여부. 여러 요청 스레드가 읽고 워밍업 스레드가 쓰므로 volatile 이어야 한다 (아래 셋도 같음) */
     private volatile boolean ready = false;
@@ -64,6 +65,16 @@ public class StartupWarmupService {
             // 30초를 기다리게 할 수는 없다. 새 크롤링은 문을 연 뒤 이어서 돈다
             boolean restored = movieCrawlerScheduler.restoreFromSnapshot();
             if (restored) {
+                /*
+                 * 복원한 제목으로 메인 목록까지 만들어 두고 문을 연다.
+                 *
+                 * <b>여기서는 TMDB 를 부르지 않는다(useTmdb=false).</b> 복원의 목적이
+                 * "크롤링을 기다리지 않고 문을 여는 것"인데 여기서 외부 API 수십 번을 기다리면
+                 * 그 목적이 사라진다. DB 에 아직 없는 영화는 잠시 빠지지만, 곧 이어지는 크롤링이
+                 * 채워 넣고 그 뒤로는 DB 에 남으므로 다음 기동부터는 처음부터 온전하다.
+                 */
+                mainPageCatalog.refresh(movieCrawlerScheduler.getCachedResult(), false);
+
                 update("준비가 끝났어요", 100);
                 ready = true;
             }

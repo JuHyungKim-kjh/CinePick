@@ -49,7 +49,7 @@ public class RecommendService {
      *
      * 채점은 <b>한 번만</b> 한다 — 목록을 따로 만들면 전체 영화 순회와 분위기 태깅이 통째로 두 번 돈다.
      *
-     * @param nowShowingMovieCds 지금 상영 중인 영화의 movieCd ({@link MovieService#getNowShowingMovieCds})
+     * @param nowShowingMovieCds 지금 상영 중인 영화의 movieCd ({@link MainPageCatalog})
      */
     @Transactional(readOnly = true)
     public MainCuration curateForMain(Member member, int limit, Set<String> nowShowingMovieCds) {

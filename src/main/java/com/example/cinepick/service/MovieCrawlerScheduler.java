@@ -10,6 +10,7 @@ public class MovieCrawlerScheduler {
 
     private final MovieCrawlerService movieCrawlerService;
     private final CrawlSnapshotStore crawlSnapshotStore;
+    private final MainPageCatalog mainPageCatalog;
 
     /** 갱신 주기 6시간. @Scheduled 는 상수만 받으므로 필드로 뽑아둔다 */
     private static final long REFRESH_INTERVAL = 6 * 60 * 60 * 1000L;
@@ -41,6 +42,18 @@ public class MovieCrawlerScheduler {
             System.out.println("[크롤링 스케줄러] 완료. 현재상영작 "
                     + cachedResult.nowShowing.size() + "개, 상영예정작 "
                     + cachedResult.upcoming.size() + "개");
+
+            /*
+             * 화면에 올릴 목록을 여기서 끝까지 만들어 둔다.
+             *
+             * 예전에는 이 일을 요청 스레드가 했다 — 크롤링 제목을 DB 와 맞추고, 못 맞춘 제목마다
+             * TMDB 를 동기로 부르느라 상영예정작 탭이 매 요청 6초 넘게 걸렸다. 이 호출이
+             * 그 작업을 요청 경로 밖으로 완전히 들어낸다.
+             *
+             * 크롤링이 실패하면 여기까지 오지 않는다 — 이전 목록이 그대로 유지되므로
+             * 빈 화면을 보여주지 않는다.
+             */
+            mainPageCatalog.refresh(result, true);
         } catch (Exception e) {
             System.out.println("[크롤링 스케줄러] 실패: " + e.getMessage());
             // 실패해도 이전 캐시는 유지된다 → 빈 화면을 보여주지 않는다
