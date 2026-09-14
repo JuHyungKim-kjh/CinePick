@@ -5,10 +5,10 @@
     <title>CinePick - 영화 상세</title>
 </head>
 <body>
-<main class="container my-5">
+<main class="container my-5 movie-detail">
 
     <!-- 브레드크럼 · 뒤로가기 -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 detail-crumb">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a th:href="@{/static}" class="text-decoration-none text-muted"><i class="bi bi-house-door"></i> 홈</a></li>
@@ -22,10 +22,10 @@
     </div>
 
     <!-- 영화 상세 정보 카드 -->
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-        <div class="row g-5">
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 detail-card">
+        <div class="row g-5 detail-row">
             <!-- 좌측: 포스터 -->
-            <div class="col-md-5 col-lg-4 position-relative">
+            <div class="col-md-5 col-lg-4 position-relative detail-poster">
                 <!-- 상태 뱃지 -->
                 <div th:if="${movieStatus == 'NOW'}" class="position-absolute top-0 start-0 m-3 px-3 py-1 bg-dark text-white fw-bold rounded-pill" style="z-index: 10;">
                     현재 상영작
@@ -41,10 +41,15 @@
             </div>
 
             <!-- 우측: 정보 -->
-            <div class="col-md-7 col-lg-8">
-                <h2 class="fw-bold mb-1" th:text="${movie.title}">영화 제목</h2>
-                <p class="text-muted mb-4 text-uppercase" th:text="${movie.titleEn}">English Title</p>
+            <div class="col-md-7 col-lg-8 detail-meta">
+                <!-- .detail-title / .detail-spec 래퍼는 데스크톱에서는 그냥 블록이라 화면이 그대로다.
+                     모바일에서만 movie-detail.css 가 이 둘을 떼어내 예매 카드를 사이에 끼운다 -->
+                <div class="detail-title">
+                    <h2 class="fw-bold mb-1" th:text="${movie.title}">영화 제목</h2>
+                    <p class="text-muted mb-4 text-uppercase" th:text="${movie.titleEn}">English Title</p>
+                </div>
 
+                <div class="detail-spec">
                 <table class="table table-borderless align-middle mt-4">
                     <tbody>
                     <tr class="border-bottom">
@@ -73,6 +78,7 @@
                     </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -80,7 +86,7 @@
     <!-- 하단 예매 카드 (상태별 분기) -->
 
     <!-- [A] 현재 상영작 — 상영 중인 사이트 버튼만 -->
-    <div class="card border-0 shadow-sm rounded-4 p-5" th:if="${movieStatus == 'NOW'}">
+    <div class="card border-0 shadow-sm rounded-4 p-5 detail-booking" th:if="${movieStatus == 'NOW'}">
         <h4 class="fw-bold mb-4">예매 가능 사이트</h4>
         <div class="row g-3">
             <!-- data-reservation-site 는 로그인 사용자에게만 붙는다. reservation-click.js 가 이 속성으로 리스너를 건다 -->
@@ -113,7 +119,7 @@
         </p>
     </div>
     <!-- [B] 상영 예정작 — 크롤링한 개봉일 기준 D-Day -->
-    <div class="card border-0 shadow-sm rounded-4 p-5 text-center" th:if="${movieStatus == 'UPCOMING'}">
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center detail-booking" th:if="${movieStatus == 'UPCOMING'}">
         <h5 class="fw-bold text-muted mb-3">개봉까지 남은 시간</h5>
 
         <div th:if="${movie.dDayLabel != null}">
