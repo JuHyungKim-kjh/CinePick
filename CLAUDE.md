@@ -31,7 +31,7 @@ Package layout under `src/main/java/com/example/cinepick/`:
 
 **Movie data flow**: `MovieService` merges two sources — TMDB API data (via `OpenApiService`, using `RestTemplate`) and multi-site scrape results from `MovieCrawlerService` (Selenium-based scraping of CGV, Lotte Cinema, Megabox for now-showing/upcoming titles and per-site detail links). `MovieCrawlerScheduler` caches results in memory (`volatile CrawlResult`). Titles from different sources are matched via `cleanTitle()` normalization before being upserted into `MovieRepository`.
 
-**`cleanTitle()` 매칭은 반드시 실패한다는 전제로 쓴다.** 라이브뷰잉·재개봉처럼 예매사마다 표기가 다른 제목은 정규화해도 같은 작품으로 묶이지 않는다. 그런데 그 제목들을 TMDB에 물어보면 **같은 id가 돌아온다.** 제목으로 못 찾았다고 바로 `movieRepository.save()` 하면 `movie_cd` 유니크 제약(`UK52viw…`)에 걸려 예외가 컨트롤러까지 올라가고, **메인 화면 전체가 500**이 된다(실제로 발생). 그래서 TMDB에서 id를 받은 직후 `findByMovieCd()`로 한 번 더 확인하고 있으면 그 행을 재사용한다 — `seedIfEmpty()`가 원래 쓰던 방식과 같다. 같은 이유로 `getMoviesForMainPage()`는 화면 목록도 `movieCd` 기준으로 중복을 걷어내는데, **사이트별 링크 갱신(`updateSiteLinks`)은 그 중복 제거보다 먼저** 해야 한다. 표기가 다른 두 제목은 서로 다른 예매사에서 온 것이라, 뒤쪽을 그냥 건너뛰면 그 사이트의 예매 링크를 잃는다.
+**`cleanTitle()` 매칭은 반드시 실패한다는 전제로 쓴다.** 라이브뷰잉·재개봉처럼 예매사마다 표기가 다른 제목은 정규화해도 같은 작품으로 묶이지 않는다. 그런데 그 제목들을 TMDB에 물어보면 **같은 id가 돌아온다.** 제목으로 못 찾았다고 바로 `movieRepository.save()` 하면 `movie_cd` 유니크 제약(`UK52viw…`)에 걸려 예외가 컨트롤러까지 올라가고, **메인 화면 전체가 500**이 된다(실제로 발생). 그래서 TMDB에서 id를 받은 직후 `findByMovieCd()`로 한 번 더 확인하고 있으면 그 행을 재사용한다 — `seedIfEmpty()`가 원래 쓰던 방식과 같다. 같은 이유로 `MainPageCatalog`는 화면 목록도 `movieCd` 기준으로 중복을 걷어내는데, **사이트별 링크 갱신(`updateSiteLinks`)은 그 중복 제거보다 먼저** 해야 한다. 표기가 다른 두 제목은 서로 다른 예매사에서 온 것이라, 뒤쪽을 그냥 건너뛰면 그 사이트의 예매 링크를 잃는다.
 
 **시작 준비와 대기 화면**: 크롤링과 TMDB 초기 적재는 예전에 둘 다 `@PostConstruct`였다. 그러면 빈 생성 단계에서 30초 넘게 붙잡히는데 **Tomcat이 포트를 여는 건 그 다음**이라, 그동안 브라우저에는 "연결할 수 없음"만 떴다. 대기 화면을 띄우려 해도 띄울 서버가 없는 상태였다. 포트폴리오라 서버를 자주 껐다 켠다는 점에서 이 시간이 곧 첫인상이 된다.
 
@@ -48,9 +48,28 @@ Package layout under `src/main/java/com/example/cinepick/`:
 
 **게이트는 두 경로에만 걸린다 — `/` 와 `/movies/detail/**`**(`WebConfig.addInterceptors`). 예전에는 `/**`를 전부 막고 로딩 화면·정적 자원만 뺐는데, 그러면 마이페이지나 고객지원처럼 **크롤링과 아무 상관 없는 화면까지** 30초를 기다렸다. 무엇을 기다리는지 알 수 없는 대기였다. 막을 곳만 적으면 기본값이 "통과"가 되고 제외 목록도 통째로 사라진다(`/system/**`를 빼먹어 무한 대기에 빠지는 위험 자체가 없어진다).
 
-두 경로인 이유는 **크롤링 캐시가 없으면 화면이 조용히 틀리기 때문**이다. 메인은 `getMoviesForMainPage()`가 크롤링 제목을 순회하므로 목록이 통째로 비고, 영화 상세는 `determineMovieStatus()`가 아무것도 일치시키지 못해 **상영 중인 영화를 종영으로 표시하고 예매 버튼을 지운다**. 반면 `/movies` 목록은 DB만 읽고 고객지원·마이페이지·추천은 크롤링을 아예 쓰지 않는다.
+두 경로인 이유는 **크롤링 캐시가 없으면 화면이 조용히 틀리기 때문**이다. 메인은 `MainPageCatalog`가 크롤링 제목을 순회해 만들어 둔 목록을 읽으므로 통째로 비고, 영화 상세는 `determineMovieStatus()`가 아무것도 일치시키지 못해 **상영 중인 영화를 종영으로 표시하고 예매 버튼을 지운다**. 반면 `/movies` 목록은 DB만 읽고 고객지원·마이페이지·추천은 크롤링을 아예 쓰지 않는다.
 
-> 새 화면이 `MovieCrawlerScheduler.getCachedResult()`에 의존하기 시작하면 **그 경로를 `WebConfig`에 더해야 한다.** 빠뜨려도 막히지 않고 빈 목록이나 틀린 상영 상태가 그대로 보이므로 알아채기 어렵다. `MovieService`의 두 메서드에 같은 경고를 주석으로 달아 뒀다.
+> 새 화면이 `MovieCrawlerScheduler.getCachedResult()`나 `MainPageCatalog.get()`에 의존하기 시작하면 **그 경로를 `WebConfig`에 더해야 한다.** 빠뜨려도 막히지 않고 빈 목록이나 틀린 상영 상태가 그대로 보이므로 알아채기 어렵다. `MovieService.determineMovieStatus()`와 `MainPageCatalog`에 같은 경고를 주석으로 달아 뒀다.
+
+**메인 목록은 요청 밖에서 미리 만든다**(`MainPageCatalog`). 예전에는 `MovieService.getMoviesForMainPage(tab)`가 요청 스레드 안에서 크롤링 제목을 DB와 맞추고, 못 맞춘 제목마다 TMDB를 동기로 불렀다. 실측으로 **상영예정작 탭이 매 요청 45번의 TMDB 왕복(6.4초)** 을 반복했다 — `seedIfEmpty()`가 `now_playing`만 적재해 DB가 현재상영작 편향이라 예정작은 거의 전부가 그 경로였다. 지금은 `MovieCrawlerScheduler.refresh()`가 크롤링 직후 `MainPageCatalog.refresh(result, true)`를 불러 매칭·TMDB 보충·링크 갱신을 전부 끝내고, 요청은 완성된 목록을 읽기만 한다(**6.4초 → 0.03초, 콜드 9.9초 → 0.03초**).
+
+- **스냅샷 복원 직후에는 `useTmdb=false`로 부른다.** 복원의 목적이 "크롤링을 기다리지 않고 문을 여는 것"인데 여기서 외부 API 수십 번을 기다리면 그 목적이 사라진다. DB에 없는 영화만 잠시 빠지고, 뒤이어 도는 크롤링이 채운다.
+- **`MainPageCatalog`는 `MovieCrawlerScheduler`를 주입받지 않는다** — 스케줄러가 이쪽을 부르므로 서로 참조하면 순환 의존이 된다. 그래서 크롤링 결과를 인자로 받는다.
+- **`SiteLinkUpdater`가 따로 있는 이유도 순환 의존이다.** `MovieCrawlerScheduler → MainPageCatalog`이고 `MovieService → MovieCrawlerScheduler`라, 링크 갱신을 둘 중 어디에 둬도 고리가 닫힌다. 양쪽이 함께 의존하는 별도 빈으로 뺐다.
+
+**상영작 탭도 화면에서만 전환한다**(`home.html` + `movie-slider.html` + `home.js`). 예전에는 `<a th:href="@{/(tab=...)}">`라 클릭 한 번에 메인 전체(큐레이션·박스오피스·취향 프로필·공지/FAQ)가 다시 계산됐다. 지금은 두 목록을 함께 내려보내고 `home.js`가 바꾼다(**6.4초 → 0.016초**). 주소창의 `?tab=`은 `replaceState`로 맞춰 새로고침·공유가 그대로 된다.
+
+- **슬라이더는 화면에 나온 뒤에 만든다.** 숨은 컨테이너에서 만들면 Swiper가 폭을 0으로 재는데, 이 슬라이더는 `centeredSlides + loop`라 복제 슬라이드 위치까지 어긋나고 **`update()`로도 돌아오지 않는다**(실제로 예정작 탭 왼쪽 절반이 비어 나왔다). 옆의 큐레이션 슬라이더는 그 둘이 없어 `update()`만으로 되는 것이라 **같은 방법을 쓰면 안 된다**.
+- 두 슬라이더 모두 `movieSwiper` 클래스를 유지하고 `id`로만 구분한다 — 그 클래스에 가운데 포스터 확대가 잘리지 않게 하는 상하 55px 패딩이 들어 있다.
+
+**오류 화면**(`templates/error/`): 한 장이 아니라 **두 갈래**다. `4xx.html`은 밝은 화면 + `layout.html` 유지(서버는 멀쩡하니 필요한 건 빠져나갈 길이다), `5xx.html`은 어두운 전면 + **레이아웃 없음**이다. `layout.html`은 `PendingReservationAdvice`가 넣는 값을 참조하므로, 서버 상태를 믿을 수 없는데 그것까지 얹으면 **오류 화면이 또 터진다**. `loading.html`과 같은 이유·같은 옷이라, 결과적으로 "어두운 전면 = 시스템 상태 화면"이 서비스 전체 규칙이 된다.
+
+- **`IllegalArgumentException` → 404**(`GlobalExceptionAdvice`). 이 프로젝트에서 그 예외는 전부 "찾을 수 없다"는 뜻으로만 쓰인다. 화면으로 직접 바꾸지 않고 `response.sendError()`를 부르는 이유는 **오류 처리 경로를 한 갈래로 모으기** 위해서다.
+- **TMDB가 없는 id에 HTTP 404를 준다.** `RestTemplate`이 그걸 `HttpClientErrorException`으로 던지므로 `getMovieDetail()`의 `movieInfo.has("status_code")` 검사는 **한 번도 실행되지 않았고**, "없는 영화"가 500으로 나갔다. `OpenApiService.getTmdbMovieDetail()`이 404만 잡아 null을 돌려준다 — 타임아웃·TMDB 장애(5xx)는 실제 서버 문제라 그대로 올려보낸다.
+- **`server.error.include-stacktrace: never` 설정만 믿으면 안 된다.** devtools가 개발 환경에서 이 값을 always로 되돌려, 404 JSON 응답에 80줄짜리 스택트레이스가 그대로 나갔다. `ErrorRefAttributes`가 `trace`·`message`를 직접 지운다. 대신 여섯 글자 참조 코드(`REF`)를 화면과 서버 로그에 함께 남긴다.
+- **403은 필터 단계에서 끝나 `@ControllerAdvice`를 거치지 않는다.** `SecurityConfig`의 `accessDeniedHandler`가 `sendError(403)`를 부른다. `accessDeniedPage("/error")`는 그냥 forward라 `error.status_code`가 비고, 그러면 403인데 **500 화면**이 뜬다.
+- **Thymeleaf 3.1에서 `#httpServletRequest`·`#request`가 제거됐다.** 오류 화면에서 요청 메서드가 필요하면 `ErrorRefAttributes`가 넣어 주는 `${method}`를 쓴다.
 
 주의할 점 둘:
 
@@ -65,9 +84,9 @@ Package layout under `src/main/java/com/example/cinepick/`:
 
 **메인 AI 큐레이션의 두 탭**(`home.html` + `curation-slider.html` + `home.js`): 「지금 상영 중」(기본)과 「전체 작품」이다. 전자는 크롤링 상영작 안에서만 고른다 — 전체에서만 추천하면 **극장에서 볼 수 없는 작품이 절반쯤 섞여** "지금 뭐 볼까"로 들어온 사용자에게 쓸모없는 목록이 된다.
 
-- **채점은 한 번만 한다.** `RecommendService.curateForMain()`이 전체를 채점한 뒤 `MovieService.getNowShowingMovieCds()`가 준 집합으로 걸러 `MainCuration(all, nowShowing)` 두 벌을 함께 돌려준다. 목록별로 따로 부르면 전체 영화 순회와 `MoodTagger.tag()`가 통째로 두 번 돈다.
+- **채점은 한 번만 한다.** `RecommendService.curateForMain()`이 전체를 채점한 뒤 `MainPageCatalog`가 준 상영작 집합으로 걸러 `MainCuration(all, nowShowing)` 두 벌을 함께 돌려준다. 목록별로 따로 부르면 전체 영화 순회와 `MoodTagger.tag()`가 통째로 두 번 돈다.
 - **`matchPercent`는 두 목록 모두 전체 최고점으로 나눈다.** 상영작만 따로 정규화하면 후보가 적을 때 **평범한 영화가 100%로 표시된다.** 같은 기준을 써야 두 탭의 숫자가 비교 가능하고, 상영작 탭 최고값이 100%에 못 미치는 편이 사실에 가깝다.
-- **`getNowShowingMovieCds()`는 읽기 전용**이다. `getMoviesForMainPage()`와 달리 TMDB를 부르지도 저장하지도 않는다 — 이미 채점한 영화를 거르는 용도라 DB에 없는 영화는 어차피 점수가 없다. 다만 **크롤링 캐시를 읽는 소비자가 하나 더 늘었다**(`/`는 이미 `WebConfig` 게이트 대상이라 추가 작업은 없다).
+- **상영작 집합은 `MainPageCatalog`가 목록을 만들 때 같은 인덱스로 함께 계산한다.** 따로 부르면 `movie` 테이블 전체 로드가 한 요청에 두 번 돈다. 한 `cleanTitle`에 여러 행이 걸릴 수 있으므로 **전부** 모아야 한다 — 하나만 취하면 그 영화가 '지금 상영 중' 탭에서 조용히 사라진다.
 - **탭 전환은 화면에서만 한다.** 두 목록을 이미 다 내려보냈다. 다만 **숨은 채로 만들어진 Swiper는 폭을 0으로 재므로** 탭을 열 때 `swiper.update()`를 부른다(`home.js`). 그리고 두 슬라이더 모두 `curationSwiper` 클래스를 유지하고 `id`로만 구분한다 — 그 클래스에 **화살표가 잘리지 않게 하는 패딩 보정**이 들어 있다.
 - 상영작 목록은 비어 있을 수 있다(크롤링 준비 전이거나 취향과 겹치지 않을 때). 이때는 안내 문구와 전체 탭으로 가는 버튼만 보여준다. `HomeController`가 **빈 목록이라도 속성을 반드시 넣는다** — `#lists.isEmpty(null)`은 예외를 낸다.
 
