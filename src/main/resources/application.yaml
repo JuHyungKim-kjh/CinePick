@@ -27,6 +27,18 @@ spring:
     prefix: classpath:/templates/
     suffix: .html
 
+# 오류 화면. templates/error/4xx.html · 5xx.html 이 대신 나온다
+server:
+  error:
+    # 기본 Whitelabel 페이지(흰 바탕에 영문 스택 정보, 돌아갈 링크 없음)를 끈다
+    whitelabel:
+      enabled: false
+    # 예외 메시지·스택트레이스를 화면에 내보내지 않는다. 사용자에게 쓸모없고 내부 정보가 샌다.
+    # 대신 ErrorRefAttributes 가 짧은 참조 코드를 화면과 서버 로그에 같이 남긴다
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+
 api:
   kobis:
     key: ${KOBIS_API_KEY:}

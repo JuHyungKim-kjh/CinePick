@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<!--
+  서버 쪽 오류(500 · 502 …).
+
+  layout.html 을 쓰지 않는다 — 공통 레이아웃은 PendingReservationAdvice 가 넣는 값을
+  참조하므로, 서버 상태를 믿을 수 없는 상황에 그것까지 얹으면 오류 화면이 또 터진다.
+  loading.html 과 같은 이유이고 같은 옷이다(어두운 전면). 결과적으로 이 서비스에서
+  '어두운 전면 = 시스템 상태 화면' 이 된다.
+
+  이 화면은 DB 도 크롤링 캐시도 부르지 않는다. 아무것에도 기대지 않는 것이 목적이다.
+-->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'CinePick - ' + (${status != null and status >= 500 and status < 600} ? ${status} : 500)">CinePick - 500</title>
+    <link rel="stylesheet" th:href="@{/css/error.css}">
+</head>
+<body class="error-system">
+<main class="error-system-shell">
+
+    <img class="error-system-logo" th:src="@{/images/Logo.png}" alt="CinePick">
+
+    <div th:replace="~{error/film-strip :: torn}"></div>
+
+    <!-- status 가 없거나 이상한 값일 수 있다 — 주소창에 /error 를 직접 치면 Spring 이 999 를 넣는다.
+         그 숫자가 화면에 나가면 사용자에게 아무 뜻도 없으므로 500 으로 보정한다 -->
+    <div class="error-code"
+         th:text="'ERROR ' + (${status != null and status >= 500 and status < 600} ? ${status} : 500)">ERROR 500</div>
+
+    <h1 class="error-title">잠시 문제가 생겼어요</h1>
+    <p class="error-desc">서버가 요청을 처리하지 못했어요.<br>잠시 후 다시 시도해 주세요.</p>
+
+    <div class="error-actions">
+        <!-- '다시 시도' 는 GET 으로 들어온 화면에서만 내보낸다.
+             POST 였다면 reload 가 재전송 경고를 띄워 상황을 더 헷갈리게 만든다 -->
+        <button type="button" class="error-btn error-btn-solid" id="errorRetry"
+                th:if="${method == null or method == 'GET'}">다시 시도</button>
+        <a th:href="@{/}" class="error-btn error-btn-ghost">홈으로 가기</a>
+    </div>
+
+    <!-- 스택트레이스 대신 남기는 짧은 식별자. 1:1 문의에 이 여섯 글자만 적어 주면
+         서버 로그에서 해당 요청을 바로 찾을 수 있다 (ErrorRefAttributes 가 같은 값을 로그에 남긴다) -->
+    <p class="error-ref" th:if="${ref != null}" th:text="'REF ' + ${ref}">REF 000000</p>
+</main>
+
+<script defer th:src="@{/js/error.js}"></script>
+</body>
+</html>

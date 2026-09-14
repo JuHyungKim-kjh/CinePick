@@ -1,0 +1,196 @@
+/* 오류 화면 (error/4xx.html · error/5xx.html)
+ *
+ * 두 화면은 옷이 다르다 —
+ *   4xx = 사용자가 길을 잃음 → 밝은 화면 + 공통 레이아웃(navbar/footer)을 그대로 둔다.
+ *         서버는 멀쩡하므로 필요한 건 '빠져나갈 길'이다. 막다른 길을 만들지 않는 것이 목적.
+ *   5xx = 시스템이 이상함 → 어두운 전면 + 레이아웃 없음.
+ *         layout.html 은 PendingReservationAdvice 가 넣는 값을 참조하므로, 서버가 이상한
+ *         상황에 그것까지 얹으면 오류 화면이 또 터질 수 있다.
+ *
+ * 이 갈래는 새로 만든 규칙이 아니다. loading.html 이 이미 '어두운 전면 + 레이아웃 없음'이고
+ * 같은 이유가 주석에 적혀 있다. 결과적으로 '어두운 전면 = 시스템 상태 화면'이 된다.
+ */
+
+/* 5xx 는 layout.html 을 쓰지 않아 style.css 가 붙지 않는다 — 테마 변수를 여기서 다시 선언한다
+   (loading.css 가 쓰는 방식과 같다) */
+:root {
+    --bg-main: #F8F9FA;
+    --text-dark: #212529;
+    --point-red: #FA5252;
+}
+
+/* ─────────────────────────── 공통 ─────────────────────────── */
+
+/* 상태 코드. 사용자가 알아야 할 정보가 아니라 개발자용이므로 작게 둔다 —
+   거대한 숫자를 박는 흔한 방식을 쓰지 않은 이유다 */
+.error-code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    font-weight: 700;
+    color: var(--point-red);
+    margin-bottom: 10px;
+}
+
+.error-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+    word-break: keep-all;
+}
+
+.error-desc {
+    font-size: 0.92rem;
+    line-height: 1.75;
+    margin: 0 0 26px;
+    word-break: keep-all;
+    max-width: 34ch;
+}
+
+.error-actions {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* 필름 스트립. 있어야 할 프레임 하나가 비어 있다는 뜻이 그대로 읽힌다 */
+.error-strip {
+    margin-bottom: 22px;
+    max-width: 100%;
+    height: auto;
+}
+
+/* ─────────────────────── 4xx (밝은 화면) ─────────────────────── */
+
+.error-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
+    padding: 46px 40px 40px;
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.error-card .error-desc {
+    color: #868E96;
+}
+
+.error-help {
+    margin: 24px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid #E9ECEF;
+    width: 100%;
+    font-size: 0.8rem;
+    color: #868E96;
+}
+
+.error-help a {
+    color: var(--point-red);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.error-help a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 575.98px) {
+    .error-card { padding: 32px 22px 28px; border-radius: 14px; }
+    .error-title { font-size: 1.15rem; }
+    /* 좁은 화면에서는 버튼을 세로로 쌓아 손가락 표적을 넓힌다 */
+    .error-actions { flex-direction: column; align-self: stretch; }
+    .error-actions .btn { width: 100%; }
+}
+
+/* ─────────────────────── 5xx (어두운 전면) ─────────────────────── */
+
+/* layout.html 을 쓰지 않으므로 body 부터 직접 칠한다 */
+body.error-system {
+    margin: 0;
+    background-color: var(--text-dark);
+    color: #fff;
+    font-family: "Malgun Gothic", "맑은 고딕", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.error-system-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+}
+
+.error-system-logo {
+    width: 132px;
+    max-width: 50vw;
+    margin-bottom: 28px;
+    padding: 10px 16px;
+    background: #fff;
+    border-radius: 14px;
+}
+
+.error-system-shell .error-desc {
+    color: rgba(255, 255, 255, 0.62);
+}
+
+/* 참조 코드. 사용자가 1:1 문의에 이 여섯 글자만 적어 주면 로그에서 요청을 바로 찾는다 */
+.error-ref {
+    margin: 26px 0 0;
+    font-size: 0.72rem;
+    font-family: Consolas, "Courier New", monospace;
+    color: rgba(255, 255, 255, 0.32);
+    letter-spacing: 0.06em;
+}
+
+/* 어두운 배경 위 버튼. style.css 의 .btn-point 는 여기 없으므로 직접 쓴다 */
+.error-btn {
+    border-radius: 22px;
+    padding: 9px 24px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid transparent;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.error-btn-solid {
+    background: var(--point-red);
+    color: #fff;
+}
+
+.error-btn-solid:hover {
+    background: #e03e3e;
+    color: #fff;
+}
+
+.error-btn-ghost {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #fff;
+}
+
+.error-btn-ghost:hover {
+    border-color: rgba(255, 255, 255, 0.8);
+    color: #fff;
+}
+
+.error-btn:focus-visible,
+.error-help a:focus-visible {
+    outline: 2px solid var(--point-red);
+    outline-offset: 3px;
+}
+
+@media (max-width: 575.98px) {
+    .error-system-shell .error-actions { flex-direction: column; align-self: stretch; width: 100%; max-width: 280px; }
+    .error-system-shell .error-btn { width: 100%; }
+}
