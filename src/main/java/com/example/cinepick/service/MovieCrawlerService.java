@@ -400,8 +400,17 @@ public class MovieCrawlerService {
         }
     }
 
+    /**
+     * 제목 비교용 정규화. 한글·영문·숫자만 남긴다.
+     *
+     * <b>Pattern 을 상수로 둔 이유</b>: replaceAll 은 호출마다 정규식을 새로 컴파일한다.
+     * 이 메서드는 제목 매칭 루프 안에서 수만 번 돌기 때문에(메인 목록·박스오피스·상영상태 판단)
+     * 컴파일 비용이 그대로 응답 시간이 된다.
+     */
+    private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^a-zA-Z0-9가-힣]");
+
     public String cleanTitle(String title) {
         if (title == null) return "";
-        return title.replaceAll("[^a-zA-Z0-9가-힣]", "").toLowerCase();
+        return NON_ALPHANUMERIC.matcher(title).replaceAll("").toLowerCase();
     }
 }

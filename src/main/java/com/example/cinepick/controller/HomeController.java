@@ -10,7 +10,7 @@ import com.example.cinepick.repository.MemberRepository;
 import com.example.cinepick.repository.PreferenceSurveyRepository;
 import com.example.cinepick.service.BoxOfficeService;
 import com.example.cinepick.service.CsService;
-import com.example.cinepick.service.MovieService;
+import com.example.cinepick.service.MainPageCatalog;
 import com.example.cinepick.service.PreferenceService;
 import com.example.cinepick.service.RatingService;
 import com.example.cinepick.service.RecommendService;
@@ -27,12 +27,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
 public class HomeController {
 
-    private final MovieService movieService;
+    private final MainPageCatalog mainPageCatalog;
     private final MemberRepository memberRepository;
     private final PreferenceSurveyRepository preferenceSurveyRepository;
     private final PreferenceService preferenceService;
@@ -64,9 +65,22 @@ public class HomeController {
                        HttpServletRequest request,
                        Model model) {
 
-        List<MovieListResDto> movies = movieService.getMoviesForMainPage(tab);
-        model.addAttribute("movies", movies);
-        model.addAttribute("currentTab", tab);
+        /*
+         * 두 탭 목록을 <b>함께</b> 내려보내고 전환은 home.js 가 화면에서만 한다.
+         *
+         * 예전에는 탭이 <a th:href="@{/(tab=...)}"> 라 클릭 한 번에 메인 전체
+         * (큐레이션·박스오피스·취향 프로필·공지/FAQ)가 다시 계산됐다. 영화 목록만 바뀌면 되는데
+         * 페이지를 통째로 다시 만든 셈이다. 같은 방식의 선례가 이미 둘 있다 —
+         * AI 큐레이션 두 탭(home.js)과 FAQ 분류 거르개(cs-faq.js).
+         *
+         * 목록은 MainPageCatalog 가 크롤링 직후 미리 만들어 둔 것이라 두 벌을 내보내도
+         * 추가 비용이 없다. 이 전제가 없으면 첫 로딩이 두 탭 값을 모두 치르게 된다.
+         */
+        MainPageCatalog.Prepared prepared = mainPageCatalog.get();
+        model.addAttribute("nowMovies", prepared.nowShowing());
+        model.addAttribute("upcomingMovies", prepared.upcoming());
+        // 딥링크(/?tab=upcoming)로 들어오면 그 탭이 열린 채로 시작한다
+        model.addAttribute("currentTab", "upcoming".equals(tab) ? "upcoming" : "now");
 
         boolean isLoggedIn = authentication != null
                 && authentication.isAuthenticated()
@@ -90,7 +104,7 @@ public class HomeController {
         model.addAttribute("genreOptions", SurveyController.GENRE_OPTIONS);
         model.addAttribute("moodOptions", SurveyController.MOOD_OPTIONS);
 
-        addCuration(isLoggedIn, authentication, model);
+        addCuration(isLoggedIn, authentication, prepared.nowShowingMovieCds(), model);
 
         // 화면 맨 아래 고객지원 구역. 실제 게시판에서 가져온다 —
         // 메인에 적힌 제목을 눌렀는데 다른 글이 나오면 그때부터 이 구역을 아무도 믿지 않는다
@@ -105,14 +119,15 @@ public class HomeController {
      * 취향 정보가 있으면 AI 큐레이션과 취향 프로필을, 없으면 박스오피스 인기 순위를 보여준다.
      * 설문 유도는 팝업이 담당하므로 화면에 별도 버튼을 두지 않는다.
      */
-    private void addCuration(boolean isLoggedIn, Authentication authentication, Model model) {
+    private void addCuration(boolean isLoggedIn, Authentication authentication,
+                             Set<String> nowShowingMovieCds, Model model) {
         List<AiRecommendResDto> curationList = List.of();
 
         if (isLoggedIn) {
             Member member = memberRepository.findByEmail(authentication.getName()).orElse(null);
             if (member != null) {
                 RecommendService.MainCuration curation = recommendService.curateForMain(
-                        member, CURATION_SIZE, movieService.getNowShowingMovieCds());
+                        member, CURATION_SIZE, nowShowingMovieCds);
                 curationList = curation.all();
 
                 if (!curationList.isEmpty()) {

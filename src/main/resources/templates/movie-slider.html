@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  메인 상영작 슬라이더 한 벌. 「현재 상영작」·「상영 예정작」 두 탭이 같은 모양이라 한 곳에 둔다.
+
+  class 는 반드시 movieSwiper 를 유지하고 구분은 id 로만 한다 —
+  style.css 의 .movieSwiper 규칙에 가운데 포스터 확대(scale 1.12)가 잘리지 않게 하는
+  상하 55px 패딩이 들어 있다.
+-->
+<!-- 화살표는 .swiper 밖(shell 안)에 둔다.
+     안에 두면 overflow:hidden 이 패딩 박스에서 잘라내 바깥에 걸친 만큼이 사라진다 -->
+<div th:fragment="slider(sliderId, movies)" class="swiper-shell" th:id="'shellMovie-' + ${sliderId}">
+    <div class="swiper movieSwiper py-3" th:id="'movieSwiper-' + ${sliderId}">
+        <div class="swiper-wrapper">
+
+            <div class="swiper-slide" th:if="${#lists.isEmpty(movies)}">
+                <div class="card border-0 shadow-sm h-100 d-flex flex-column justify-content-center align-items-center" style="border-radius: 15px; min-height: 430px;">
+                    <p class="text-muted fw-bold mb-0">수집된 영화가 없습니다.</p>
+                </div>
+            </div>
+
+            <div class="swiper-slide" th:each="movie, stat : ${movies}">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; overflow: hidden;">
+                    <!-- 포스터 전체가 상세페이지 링크다. 카드에서 가장 큰 표적인데
+                         예전에는 아래 '예매하기' 버튼만 눌렸다.
+                         <a> 는 .position-relative 바깥에 둘 것 — 안에 두면 z-index:10 인
+                         순번 배지가 링크 위를 덮어 배지 영역 클릭이 죽는다 -->
+                    <a th:href="@{/movies/detail/{id}(id=${movie.movieCd})}" class="d-block">
+                        <div class="position-relative">
+                            <div class="movie-badge position-absolute top-0 start-0 m-2 px-2 py-1 text-white fw-bold rounded"
+                                 th:text="${stat.count}">1</div>
+
+                            <img th:src="${movie.posterUrl}" onerror="this.src='/images/Logo.png'" class="card-img-top" alt="영화 포스터" loading="lazy" style="height: 400px; object-fit: cover;">
+                        </div>
+                    </a>
+
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold text-truncate mb-1" th:text="${movie.title}">영화 제목</h6>
+                        <!-- 평점·예매율은 넣지 않는다. CinePick 은 예매를 중계만 하므로 예매율을 알 수 없고,
+                             평점도 회원 개인이 남긴 값뿐이라 카드에 올릴 대표 평점이 없다.
+                             고정값(0.0 / -%)을 그대로 두면 실제 수치처럼 보인다 -->
+                        <p class="small text-muted mb-3 text-truncate" th:text="${movie.genre}">장르</p>
+
+                        <a th:href="@{/movies/detail/{id}(id=${movie.movieCd})}" class="btn w-100 fw-bold bg-white rounded-3" style="border: 1px solid var(--point-red); color: var(--point-red);">예매하기</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+</div>
+</body>
+</html>

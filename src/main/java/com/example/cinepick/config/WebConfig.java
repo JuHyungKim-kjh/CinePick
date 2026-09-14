@@ -13,8 +13,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     /**
      * 시작 게이트를 크롤링 결과가 있어야 제대로 나오는 화면(메인 · 영화 상세)에만 건다.
-     * <b>새 화면이 {@code MovieCrawlerScheduler.getCachedResult()} 에 의존하면 그 경로도 여기 더할 것</b>
+     *
+     * <p><b>새 화면이 {@code MovieCrawlerScheduler.getCachedResult()} 나
+     * {@code MainPageCatalog.get()} 에 의존하면 그 경로도 여기 더할 것</b>
      * — 빠뜨리면 막히는 게 아니라 빈 목록이나 틀린 상영 상태가 조용히 나온다.
+     *
+     * <p>메인은 이제 {@code MainPageCatalog} 가 미리 만들어 둔 목록을 읽는데,
+     * 그 목록도 크롤링이 끝나야 채워지므로 게이트가 필요하다는 사실은 그대로다.
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

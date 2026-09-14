@@ -14,10 +14,8 @@ import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import java.time.LocalDate;
@@ -32,6 +30,7 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final MovieCrawlerScheduler movieCrawlerScheduler;
     private final MovieCrawlerService movieCrawlerService;
+    private final SiteLinkUpdater siteLinkUpdater;
 
     /**
      * 1. [데이터 초기화] DB 가 비어 있을 때만 TMDB 에서 기본 목록을 내려받는다.
@@ -109,7 +108,7 @@ public class MovieService {
     public MovieDetailResDto getMovieDetail(String movieId) {
         JsonNode movieInfo = openApiService.getTmdbMovieDetail(movieId);
 
-        if (movieInfo.isMissingNode() || movieInfo.has("status_code")) {
+        if (movieInfo == null || movieInfo.isMissingNode() || movieInfo.has("status_code")) {
             throw new IllegalArgumentException("영화 정보를 찾을 수 없습니다.");
         }
 
@@ -194,7 +193,7 @@ public class MovieService {
 
         if (dbMovie != null) {
             String cleanedTitle = movieCrawlerService.cleanTitle(dbMovie.getTitle());
-            updateSiteLinks(dbMovie, movieCrawlerScheduler.getCachedResult().nowShowingLinks.get(cleanedTitle));
+            siteLinkUpdater.apply(dbMovie, movieCrawlerScheduler.getCachedResult().nowShowingLinks.get(cleanedTitle));
         }
 
         return MovieDetailResDto.builder()
@@ -239,151 +238,5 @@ public class MovieService {
         if (isUpcoming) return "UPCOMING";
 
         return "ENDED";
-    }
-
-    // 4. [메인 페이지] 3사 크롤링 데이터와 TMDB 연동으로 목록 생성
-    //
-    // 주의: 크롤링 결과를 순회하므로 크롤링 전에 부르면 빈 목록이 나온다.
-    // 이 메서드를 쓰는 화면은 WebConfig 의 시작 게이트 대상이어야 한다
-    public List<MovieListResDto> getMoviesForMainPage(String tab) {
-        MovieCrawlerService.CrawlResult crawlResult = movieCrawlerScheduler.getCachedResult();
-
-        List<String> crawledTitles = "upcoming".equals(tab)
-                ? crawlResult.upcoming
-                : crawlResult.nowShowing;
-
-        List<MovieListResDto> resultList = new ArrayList<>();
-        // 이번 요청 중 알아낸 영화를 덧붙이므로 수정 가능한 목록으로 복사해 둔다
-        List<Movie> allDbMovies = new ArrayList<>(movieRepository.findAll());
-        // 예매사마다 표기가 달라 크롤링 제목이 둘로 잡혀도 같은 영화라면 화면에는 한 번만 보여준다
-        Set<String> shownMovieCds = new HashSet<>();
-
-        for (String title : crawledTitles) {
-            String cleanedCrawled = movieCrawlerService.cleanTitle(title);
-            Movie matchedMovie = null;
-
-            for (Movie dbMovie : allDbMovies) {
-                if (cleanedCrawled.equals(movieCrawlerService.cleanTitle(dbMovie.getTitle()))) {
-                    matchedMovie = dbMovie;
-                    break;
-                }
-            }
-
-            if (matchedMovie == null) {
-                JsonNode tmdbData = openApiService.searchTmdbByTitle(title);
-                if (tmdbData != null) {
-                    String movieCd = tmdbData.path("id").asText();
-
-                    /*
-                     * 제목이 달라 위 반복문이 놓쳤을 뿐, 같은 영화가 이미 DB 에 있을 수 있다.
-                     * 라이브뷰잉·재개봉 제목이 대표적인데, cleanTitle() 로는 묶이지 않지만
-                     * TMDB 에서는 같은 id 로 모인다.
-                     *
-                     * 이 확인 없이 save() 하면 movie_cd 유니크 제약에 걸리고, 그 예외가
-                     * 컨트롤러까지 올라가 메인 화면 전체가 500 이 된다. (실제로 그렇게 터졌다)
-                     */
-                    matchedMovie = movieRepository.findByMovieCd(movieCd).orElse(null);
-
-                    if (matchedMovie == null) {
-                        matchedMovie = new Movie();
-                        matchedMovie.setMovieCd(movieCd);
-                        matchedMovie.setTitle(title);
-                        matchedMovie.setTitleEn(tmdbData.path("original_title").asText());
-                        matchedMovie.setOpenDate(tmdbData.path("release_date").asText());
-                        matchedMovie.setGenre(openApiService.getGenreNames(tmdbData.path("genre_ids")));
-                        matchedMovie.setDirector("상세페이지 참조");
-
-                        String posterPath = tmdbData.path("poster_path").asText();
-                        matchedMovie.setPosterUrl((posterPath != null && !posterPath.equals("null") && !posterPath.isEmpty())
-                                ? "https://image.tmdb.org/t/p/w500" + posterPath
-                                : "/images/Logo.png");
-
-                        movieRepository.save(matchedMovie);
-                    }
-
-                    // 이번 요청에서 알아낸 영화도 목록에 넣어 두면, 뒤에 나올 다른 표기의 같은 제목이
-                    // TMDB 를 다시 부르지 않고 여기서 걸린다
-                    allDbMovies.add(matchedMovie);
-                }
-            }
-
-            if (matchedMovie != null) {
-                // 현재상영작 탭에서만 사이트별 상세링크를 갱신.
-                // 아래 중복 제거보다 먼저 해야 한다 — 표기가 다른 두 제목은 서로 다른 예매사에서 온
-                // 것이라, 뒤쪽을 그냥 건너뛰면 그 사이트의 예매 링크를 통째로 잃는다
-                if (!"upcoming".equals(tab)) {
-                    updateSiteLinks(matchedMovie, crawlResult.nowShowingLinks.get(cleanedCrawled));
-                }
-
-                if (!shownMovieCds.add(matchedMovie.getMovieCd())) continue;
-
-                resultList.add(MovieListResDto.builder()
-                        .movieCd(matchedMovie.getMovieCd())
-                        .title(matchedMovie.getTitle())
-                        .openDate(matchedMovie.getOpenDate())
-                        .genre(matchedMovie.getGenre())
-                        .director(matchedMovie.getDirector())
-                        .posterUrl(matchedMovie.getPosterUrl())
-                        .build());
-            }
-        }
-
-        return resultList;
-    }
-
-    /**
-     * 4-2. [추천 후보 거르개] 지금 상영 중인 영화의 movieCd 집합.
-     *
-     * {@link #getMoviesForMainPage} 와 달리 TMDB 를 부르지도, 새 영화를 저장하지도 않는 읽기 전용이다 —
-     * 이 값은 이미 채점한 영화를 거르는 데만 쓰므로, 아직 DB 에 없는 영화는 어차피 점수가 없어
-     * 후보에서 빠져도 잃는 것이 없다.
-     *
-     * 주의: 크롤링 캐시를 읽으므로 준비 전에 부르면 빈 집합이 나온다.
-     * 이 값을 쓰는 화면은 WebConfig 의 시작 게이트 대상이어야 한다 (메인 `/` 은 이미 포함).
-     */
-    public Set<String> getNowShowingMovieCds() {
-        Set<String> crawledTitles = movieCrawlerScheduler.getCachedResult().nowShowing.stream()
-                .map(movieCrawlerService::cleanTitle)
-                .collect(Collectors.toSet());
-        if (crawledTitles.isEmpty()) return Set.of();
-
-        // 제목마다 전체 영화를 뒤지는 대신 한 번만 훑는다
-        return movieRepository.findAll().stream()
-                .filter(movie -> crawledTitles.contains(movieCrawlerService.cleanTitle(movie.getTitle())))
-                .map(Movie::getMovieCd)
-                .collect(Collectors.toSet());
-    }
-
-    // 4-1. 크롤링으로 수집한 사이트별 링크를 Movie 엔티티에 반영
-    private void updateSiteLinks(Movie movie, List<MovieCrawlerService.SiteLink> links) {
-        if (links == null) return;
-
-        boolean changed = false;
-        for (MovieCrawlerService.SiteLink link : links) {
-            switch (link.siteName) {
-                case "CGV":
-                    if (!link.detailUrl.equals(movie.getCgvUrl())) {
-                        movie.setCgvUrl(link.detailUrl);
-                        changed = true;
-                    }
-                    break;
-                case "Megabox":
-                    if (!link.detailUrl.equals(movie.getMegaboxUrl())) {
-                        movie.setMegaboxUrl(link.detailUrl);
-                        changed = true;
-                    }
-                    break;
-                case "LotteCinema":
-                    if (!link.detailUrl.equals(movie.getLotteUrl())) {
-                        movie.setLotteUrl(link.detailUrl);
-                        changed = true;
-                    }
-                    break;
-            }
-        }
-
-        if (changed) {
-            movieRepository.save(movie);
-        }
     }
 }
