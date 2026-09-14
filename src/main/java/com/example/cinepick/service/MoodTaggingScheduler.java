@@ -128,7 +128,10 @@ public class MoodTaggingScheduler {
         if (movie.getOverview() != null && !movie.getOverview().isBlank()) return;
 
         try {
+            // TMDB 에 없는 id 면 null 이 온다 (없는 영화를 500 으로 내보내지 않으려고 404 를 잡아 준다)
             JsonNode detail = openApiService.getTmdbMovieDetail(movie.getMovieCd());
+            if (detail == null) return;
+
             String overview = detail.path("overview").asText();
             if (overview != null && !overview.isBlank()) {
                 movie.setOverview(overview);
