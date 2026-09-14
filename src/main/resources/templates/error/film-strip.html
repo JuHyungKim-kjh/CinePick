@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  오류 화면의 그림. 거대한 «404» 숫자 대신 이 서비스가 다루는 물건에서 은유를 가져왔다 —
+  있어야 할 프레임 하나가 없다는 뜻이 글을 읽기 전에 전달된다.
+
+  두 벌이 있다:
+    missing : 한 칸이 비어 있는 필름 (4xx — 찾는 것이 없다)
+    torn    : 가운데가 끊어진 필름   (5xx — 진행이 끊겼다)
+-->
+
+<!-- 한 칸이 비어 있는 필름 -->
+<svg th:fragment="missing" class="error-strip" width="232" height="64" viewBox="0 0 232 64"
+     role="img" aria-label="가운데 한 칸이 비어 있는 필름">
+    <rect x="0" y="0" width="232" height="64" rx="5" fill="#212529"/>
+    <g fill="#F8F9FA">
+        <rect x="9" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="31" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="53" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="75" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="97" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="119" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="141" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="163" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="185" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="207" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="9" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="31" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="53" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="75" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="97" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="119" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="141" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="163" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="185" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="207" y="51" width="7" height="7" rx="1.5"/>
+    </g>
+    <rect x="8" y="18" width="50" height="28" rx="2" fill="#495057"/>
+    <rect x="64" y="18" width="50" height="28" rx="2" fill="#495057"/>
+    <rect x="120" y="18" width="50" height="28" rx="2" fill="none"
+          stroke="#FA5252" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <rect x="176" y="18" width="48" height="28" rx="2" fill="#495057"/>
+</svg>
+
+<!-- 가운데가 끊어진 필름 (어두운 배경용) -->
+<svg th:fragment="torn" class="error-strip" width="232" height="64" viewBox="0 0 232 64"
+     role="img" aria-label="가운데가 끊어진 필름">
+    <g fill="#343A40">
+        <rect x="0" y="0" width="104" height="64" rx="5"/>
+        <rect x="128" y="0" width="104" height="64" rx="5"/>
+    </g>
+    <!-- 찢긴 단면 -->
+    <path d="M104 0 L96 10 L104 20 L96 31 L104 42 L96 53 L104 64 Z" fill="#343A40"/>
+    <path d="M128 0 L136 11 L128 22 L136 33 L128 44 L136 55 L128 64 Z" fill="#343A40"/>
+    <g fill="rgba(255,255,255,.82)">
+        <rect x="9" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="31" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="53" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="75" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="141" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="163" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="185" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="207" y="6" width="7" height="7" rx="1.5"/>
+        <rect x="9" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="31" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="53" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="75" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="141" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="163" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="185" y="51" width="7" height="7" rx="1.5"/>
+        <rect x="207" y="51" width="7" height="7" rx="1.5"/>
+    </g>
+    <rect x="8" y="18" width="50" height="28" rx="2" fill="#495057"/>
+    <rect x="64" y="18" width="34" height="28" rx="2" fill="#495057"/>
+    <rect x="134" y="18" width="38" height="28" rx="2" fill="#495057"/>
+    <rect x="178" y="18" width="46" height="28" rx="2" fill="#495057"/>
+</svg>
+</body>
+</html>

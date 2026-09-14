@@ -2,6 +2,7 @@ package com.example.cinepick.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -54,6 +55,21 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/")             // 로그아웃 성공 시 메인 페이지로 이동
                         .invalidateHttpSession(true)       // 로그아웃 시 세션 초기화
                         .permitAll()
+                )
+
+                /*
+                 * 권한 부족(403)은 <b>필터 단계에서 끝나므로</b> @ControllerAdvice 도
+                 * DispatcherServlet 의 오류 처리도 거치지 않는다. 여기서 넘겨주지 않으면
+                 * 운영자 전용 화면에 일반 회원이 들어갔을 때 빈 403 응답만 나간다.
+                 *
+                 * accessDeniedPage("/error") 가 아니라 sendError 인 이유:
+                 * 전자는 그냥 forward 라서 컨테이너의 error.status_code 속성이 비고, 그러면
+                 * BasicErrorController 가 상태를 500 으로 보아 <b>서버 오류 화면</b>이 뜬다.
+                 * sendError 는 상태를 제대로 실어 보내므로 templates/error/4xx.html 로 간다.
+                 */
+                .exceptionHandling(handling -> handling
+                        .accessDeniedHandler((request, response, ex) ->
+                                response.sendError(HttpStatus.FORBIDDEN.value()))
                 )
 
                 // CSRF 비활성화 (개발 편의). HTML 폼 전송 시 403 을 피하려고 임시로 꺼둔 상태
