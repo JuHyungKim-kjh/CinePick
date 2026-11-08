@@ -56,3 +56,10 @@ out/
 
 ### 개인 도구 설정 ###
 .claude/settings.local.json
+
+### 개인 작업 자료 — 로컬에만 둔다 ###
+# CLAUDE.md 는 이 저장소를 다루는 개인 작업 지침이고,
+# docs/PORTFOLIO*.md 는 포트폴리오에 실을 개인 이력 자료다.
+/CLAUDE.md
+/docs/PORTFOLIO.md
+/docs/PORTFOLIO-UPDATE.md
